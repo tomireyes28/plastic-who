@@ -1,10 +1,30 @@
 import type { Metadata } from 'next';
+import { DM_Sans, Fraunces, Space_Mono } from 'next/font/google';
 import './globals.css';
 
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap',
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const spaceMono = Space_Mono({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  title: 'Plastic Who? | Ropa por su composición real',
+  title: 'Plastic Who? — Archivo y Auditoría Textil',
   description:
-    'Explorá y filtrá el catálogo de marcas de ropa argentinas según el porcentaje de fibras naturales, semisintéticas y sintéticas.',
+    'Ropa filtrada por lo que realmente está hecha, no por lo que dice la etiqueta de marketing.',
 };
 
 export default function RootLayout({
@@ -13,8 +33,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className="antialiased">{children}</body>
+    <html
+      lang="es"
+      className={`${fraunces.variable} ${dmSans.variable} ${spaceMono.variable}`}
+    >
+      <body className="min-h-screen antialiased selection:bg-[#2A4B38] selection:text-[#F6F3EC]">
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+:root {
+  --bg-linen: #f3efe6;
+  --surface-tag: #fbf9f5;
+  --surface-muted: #e8e2d5;
+  --ink-primary: #191c18;
+  --ink-secondary: #5a5d55;
+  --border-stitch: #d5cdbe;
+  --fiber-natural: #2b593f;
+  --fiber-semi: #c48b28;
+  --fiber-synthetic: #b33c2e;
+}
+
+body {
+  background-color: var(--bg-linen);
+  color: var(--ink-primary);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background-image: radial-gradient(rgba(25, 28, 24, 0.045) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.font-editorial {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.font-label {
+  font-family: var(--font-mono), monospace;
+}
+
+/* Textura sutil de trama tejida para las barras de composición */
+.weave-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.14) 0px,
+    rgba(255, 255, 255, 0.14) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+/* Borde tipo etiqueta de prenda cosida */
+.garment-tag-border {
+  border: 1px solid var(--border-stitch);
+  box-shadow: 0 2px 0 rgba(25, 28, 24, 0.04);
+}
