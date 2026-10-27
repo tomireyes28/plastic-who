@@ -44,3 +44,39 @@ export interface CompositionAnalysisResult {
   /** True si la prenda declara un forro o interior con fibras sintéticas */
   hasSyntheticLining: boolean;
 }
+
+export interface BrandSummaryDto {
+  id: string;
+  name: string;
+  slug: string;
+  websiteUrl: string;
+  platform: string;
+  isKnownBrand: boolean;
+  lastScrapedAt: string | null;
+  productCount: number;
+}
+
+export interface ProductCardDto {
+  id: string;
+  externalId: string;
+  name: string;
+  slug: string;
+  productUrl: string;
+  imageUrl: string | null;
+  price: number | null;
+  specialPrice: number | null;
+  category: string | null;
+  rawComposition: string | null;
+  naturalPercentage: number;
+  semiSyntheticPercentage: number;
+  syntheticPercentage: number;
+  trafficLight: TrafficLightColor;
+  hasSyntheticLining: boolean;
+  inStock: boolean;
+  brand: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  fibers: ParsedFiberItem[];
+}

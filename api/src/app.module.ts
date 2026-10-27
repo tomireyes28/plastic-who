@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CatalogModule } from './catalog/catalog.module';
 import { CompositionModule } from './composition/composition.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ScraperModule } from './scraper/scraper.module';
@@ -14,6 +15,7 @@ import { ScraperModule } from './scraper/scraper.module';
     PrismaModule,
     CompositionModule,
     ScraperModule,
+    CatalogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

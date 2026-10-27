@@ -17,6 +17,7 @@
     "db:generate": "npm run prisma:generate --workspace=plastic-who-api",
     "db:push": "npm run prisma:push --workspace=plastic-who-api",
     "db:migrate": "npm run prisma:migrate --workspace=plastic-who-api",
-    "db:studio": "npm run prisma:studio --workspace=plastic-who-api"
+    "db:studio": "npm run prisma:studio --workspace=plastic-who-api",
+    "scrape:wanama": "npm run scrape:wanama --workspace=plastic-who-api"
   }
 }
