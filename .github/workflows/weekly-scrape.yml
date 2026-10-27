@@ -1,0 +1,43 @@
+name: Weekly Catalog Scraper
+
+on:
+  # Corre automáticamente todos los lunes a las 09:00 UTC (06:00 AM Argentina)
+  schedule:
+    - cron: '0 9 * * 1'
+  # También permite ejecutarlo manualmente con un clic desde la pestaña "Actions" de GitHub
+  workflow_dispatch:
+    inputs:
+      max_products:
+        description: 'Cantidad máxima de prendas a escanear por marca'
+        required: false
+        default: '40'
+
+jobs:
+  scrape-stores:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Build Scraper CLI
+        run: npm run build:api
+
+      - name: Run Scraper against all brands and save to Supabase
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: node api/dist/scraper/run-scrape-cli.js all ${{ github.event.inputs.max_products || '40' }}
