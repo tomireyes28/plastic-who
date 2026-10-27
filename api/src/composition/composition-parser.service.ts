@@ -68,28 +68,34 @@ export class CompositionParserService {
       .replace(/&nbsp;/gi, ' ')
       .trim();
 
-    // 1. Buscar etiqueta explícita "Composición:" (puede incluir la línea siguiente si dice "Forrería:")
+    // 1. Buscar etiqueta explícita "Composición:" (puede tener salto de línea inmediato y líneas de "Forrería:")
     const explicitMatch = cleaned.match(
-      /composici[oó]n\s*:?\s*([^\n]+(?:\n\s*(?:forr(?:er[ií]a|o)|interior|exterior|base|tejido\s*\d)\s*:?\s*[^\n]+)*)/i,
+      /composici[oó]n\s*:?\s*([^\n]+(?:\n\s*(?:forr(?:er[ií]a|o)|interior|exterior|g[eé]nero\s*base|tela\s*base|base|tejido\s*\d)\s*:?\s*[^\n]+)*)/i,
     );
 
     if (explicitMatch && explicitMatch[1]) {
       return explicitMatch[1].replace(/\s+/g, ' ').trim();
     }
 
-    // 2. Buscar líneas que empiecen con "Exterior:" / "Tejido principal:" seguido de porcentajes
+    // 2. Buscar líneas que empiecen con "Exterior:" / "Género base:" seguido de porcentajes
     const multiPartMatch = cleaned.match(
-      /((?:exterior|tejido\s*principal|cuerpo)\s*:\s*\d+(?:[.,]\d+)?\s*%[^\n]+(?:\n\s*(?:forr(?:er[ií]a|o)|interior)\s*:\s*\d+(?:[.,]\d+)?\s*%[^\n]+)*)/i,
+      /((?:exterior|tejido\s*principal|g[eé]nero\s*base|tela\s*base|cuerpo)\s*:\s*[^\n]+(?:\n\s*(?:forr(?:er[ií]a|o)|interior)\s*:\s*[^\n]+)*)/i,
     );
 
     if (multiPartMatch && multiPartMatch[1]) {
-      return multiPartMatch[1].replace(/\s+/g, ' ').trim();
+      const candidate = multiPartMatch[1].replace(/\s+/g, ' ').trim();
+      if (this.extractFibersFromSegment(candidate).length > 0) {
+        return candidate;
+      }
     }
 
-    // 3. Fallback: buscar en cada línea si contiene patrones "XX% <fibra>"
+    // 3. Fallback: buscar en cada línea si contiene patrones "XX% <fibra>" o "<fibra> XX%"
     const lines = cleaned.split('\n');
     for (const line of lines) {
-      if (/\b\d{1,3}(?:[.,]\d+)?\s*%\s*[a-záéíóúñ]+/i.test(line)) {
+      if (
+        /\b\d{1,3}(?:[.,]\d+)?\s*%\s*[a-záéíóúñ]+/i.test(line) ||
+        /[a-záéíóúñ]+\s+\d{1,3}(?:[.,]\d+)?\s*%/i.test(line)
+      ) {
         const candidate = line.replace(/^[•\-*]\s*/, '').trim();
         if (this.extractFibersFromSegment(candidate).length > 0) {
           return candidate;
@@ -101,17 +107,17 @@ export class CompositionParserService {
   }
 
   /**
-   * Parsea un segmento de composición (ej: "98% Algodón - 2% Elastano. Forrería: 100% Poliéster")
-   * separando tela principal de forrería y resolviendo sinónimos.
+   * Parsea un segmento de composición (ej: "98% Algodón - 2% Elastano. Forrería: 100% Poliéster"
+   * o formato VTEX "LINO 40%, VISCOSA 60%") separando tela principal de forrería.
    */
   extractFibersFromSegment(segment: string): ParsedFiberItem[] {
     if (!segment) return [];
 
     const results: ParsedFiberItem[] = [];
 
-    // Dividir en sub-bloques si existen etiquetas como "Exterior:", "Forrería:", "Forro:", "Interior:"
+    // Dividir en sub-bloques si existen etiquetas como "Exterior:", "Género base:", "Forrería:", "Forro:", "Interior:"
     const sectionRegex =
-      /(?:^|[.;|/]\s*|\s+)(exterior|tejido\s*principal|cuerpo|forrer[ií]a|forro|interior)\s*:\s*/gi;
+      /(?:^|[.;|/]\s*|\s+)(exterior|tejido\s*principal|g[eé]nero\s*base|tela\s*base|base|cuerpo|forrer[ií]a|forro|interior)\s*:\s*/gi;
 
     const sections: Array<{ isLining: boolean; text: string }> = [];
     let lastIndex = 0;
@@ -135,7 +141,7 @@ export class CompositionParserService {
     }
 
     for (const sec of sections) {
-      // Soportar tanto "98% Algodón" como "Algodón 98%"
+      // Soportar tanto "98% Algodón" como formato VTEX "ALGODÓN PIMA 100%" / "LINO 40%, VISCOSA 60%"
       const pctFirstRegex =
         /(\d{1,3}(?:[.,]\d+)?)\s*%\s*([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+){0,2})/gi;
       const nameFirstRegex =

@@ -5,16 +5,27 @@ import { ScraperService } from './scraper.service';
 export class ScraperController {
   constructor(private readonly scraperService: ScraperService) {}
 
+  @Post('run-all')
+  async runAllScrapers(@Query('limit') limit?: string) {
+    const parsedLimit = limit ? parseInt(limit, 10) : 30;
+    const maxProducts =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 100)
+        : 30;
+
+    return this.scraperService.scrapeAllBrands({ maxProducts });
+  }
+
   @Post('run/:brandSlug')
   async runBrandScraper(
     @Param('brandSlug') brandSlug: string,
     @Query('limit') limit?: string,
   ) {
-    const parsedLimit = limit ? parseInt(limit, 10) : 20;
+    const parsedLimit = limit ? parseInt(limit, 10) : 30;
     const maxProducts =
       Number.isFinite(parsedLimit) && parsedLimit > 0
         ? Math.min(parsedLimit, 100)
-        : 20;
+        : 30;
 
     return this.scraperService.scrapeBrandBySlug(brandSlug, { maxProducts });
   }

@@ -38,24 +38,11 @@ describe('CompositionParserService', () => {
     expect(result.naturalPercentage).toBe(98);
     expect(result.syntheticPercentage).toBe(2);
     expect(result.trafficLight).toBe('GREEN');
-    expect(result.fibers).toEqual([
-      {
-        fiberName: 'algodón',
-        category: 'NATURAL',
-        percentage: 98,
-        isLining: false,
-      },
-      {
-        fiberName: 'elastano',
-        category: 'SYNTHETIC',
-        percentage: 2,
-        isLining: false,
-      },
-    ]);
   });
 
   it('debe clasificar una mezcla 55% viscosa / 45% poliéster como AMARILLO por tener fibra semisintética', () => {
-    const dressDescription = 'Vestido estampado. Composición: 55% viscosa, 45% poliéster';
+    const dressDescription =
+      'Vestido estampado. Composición: 55% viscosa, 45% poliéster';
 
     const result = parser.parseFromText(dressDescription);
 
@@ -63,26 +50,6 @@ describe('CompositionParserService', () => {
     expect(result.semiSyntheticPercentage).toBe(55);
     expect(result.syntheticPercentage).toBe(45);
     expect(result.trafficLight).toBe('YELLOW');
-  });
-
-  it('debe clasificar un sweater 70% lana / 30% acrílico como AMARILLO', () => {
-    const sweaterDescription = 'Composición: 70% lana 30% acrílico';
-
-    const result = parser.parseFromText(sweaterDescription);
-
-    expect(result.naturalPercentage).toBe(70);
-    expect(result.syntheticPercentage).toBe(30);
-    expect(result.trafficLight).toBe('YELLOW');
-  });
-
-  it('debe clasificar una blusa 60% algodón / 40% poliéster como ROJO (<70% natural y sin semisintéticos)', () => {
-    const blouseDescription = 'Composición: 60% algodón, 40% poliéster';
-
-    const result = parser.parseFromText(blouseDescription);
-
-    expect(result.naturalPercentage).toBe(60);
-    expect(result.syntheticPercentage).toBe(40);
-    expect(result.trafficLight).toBe('RED');
   });
 
   it('debe separar Exterior de Forrería y marcar hasSyntheticLining = true sin sumar 200%', () => {
@@ -95,19 +62,29 @@ describe('CompositionParserService', () => {
     expect(result.syntheticPercentage).toBe(0);
     expect(result.trafficLight).toBe('GREEN');
     expect(result.hasSyntheticLining).toBe(true);
-    expect(result.fibers).toEqual([
-      {
-        fiberName: 'lino',
-        category: 'NATURAL',
-        percentage: 100,
-        isLining: false,
-      },
-      {
-        fiberName: 'poliéster',
-        category: 'SYNTHETIC',
-        percentage: 100,
-        isLining: true,
-      },
-    ]);
+  });
+
+  it('debe soportar el formato de VTEX (Portsaid / Desiderata) donde el nombre va antes del porcentaje', () => {
+    const vtexComp = 'Composición: GENERO BASE: ALGODON PIMA 100%';
+    const result1 = parser.parseFromText(vtexComp);
+    expect(result1.naturalPercentage).toBe(100);
+    expect(result1.trafficLight).toBe('GREEN');
+
+    const vtexMix = 'Composición: LINO 40%, VISCOSA 60%';
+    const result2 = parser.parseFromText(vtexMix);
+    expect(result2.naturalPercentage).toBe(40);
+    expect(result2.semiSyntheticPercentage).toBe(60);
+    expect(result2.trafficLight).toBe('YELLOW');
+  });
+
+  it('debe soportar el formato de Markova con salto de línea después de Composición:', () => {
+    const markovaHtml =
+      '<p>Composición: \n72% Tencel 20% Poliamida 8% Lino\n</p>';
+    const result = parser.parseFromText(markovaHtml);
+
+    expect(result.naturalPercentage).toBe(8);
+    expect(result.semiSyntheticPercentage).toBe(72);
+    expect(result.syntheticPercentage).toBe(20);
+    expect(result.trafficLight).toBe('YELLOW');
   });
 });

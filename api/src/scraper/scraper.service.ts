@@ -62,6 +62,23 @@ export class ScraperService implements OnModuleInit {
   }
 
   /**
+   * Ejecuta el scraper para todas las marcas registradas secuencialmente.
+   */
+  async scrapeAllBrands(
+    options?: ScrapeOptions,
+  ): Promise<ScrapeExecutionSummary[]> {
+    const summaries: ScrapeExecutionSummary[] = [];
+    for (const adapter of this.adapters) {
+      const summary = await this.scrapeBrandBySlug(
+        adapter.brandMetadata.slug,
+        options,
+      );
+      summaries.push(summary);
+    }
+    return summaries;
+  }
+
+  /**
    * Ejecuta el scraper para una marca específica, analiza su composición y guarda en Supabase.
    */
   async scrapeBrandBySlug(
@@ -99,7 +116,6 @@ export class ScraperService implements OnModuleInit {
     for (const item of rawProducts) {
       const analysis = this.compositionParser.parseFromText(item.description);
 
-      // Solo guardamos como activas en el catálogo las prendas que declaran composición
       const hasValidComposition = analysis.fibers.length > 0;
       if (hasValidComposition) {
         withCompositionCount++;
@@ -107,71 +123,55 @@ export class ScraperService implements OnModuleInit {
         withoutCompositionCount++;
       }
 
-      await this.prisma.$transaction(async (tx) => {
-        const upsertedProduct = await tx.product.upsert({
-          where: {
-            brandId_externalId: {
-              brandId: brand.id,
-              externalId: item.externalId,
-            },
-          },
-          update: {
-            name: item.name,
-            slug: item.slug,
-            productUrl: item.productUrl,
-            imageUrl: item.imageUrl,
-            price: item.price,
-            specialPrice: item.specialPrice,
-            category: item.category,
-            description: item.description,
-            rawComposition: analysis.rawComposition,
-            naturalPercentage: analysis.naturalPercentage,
-            semiSyntheticPercentage: analysis.semiSyntheticPercentage,
-            syntheticPercentage: analysis.syntheticPercentage,
-            trafficLight: analysis.trafficLight,
-            hasSyntheticLining: analysis.hasSyntheticLining,
-            inStock: item.inStock,
-            isActive: item.inStock && hasValidComposition,
-            lastSeenAt: now,
-          },
-          create: {
+      const fiberRows = analysis.fibers.map((f) => ({
+        fiberName: f.fiberName,
+        category: f.category,
+        percentage: f.percentage,
+        isLining: f.isLining,
+      }));
+
+      const commonProductData = {
+        name: item.name,
+        slug: item.slug,
+        productUrl: item.productUrl,
+        imageUrl: item.imageUrl,
+        price: item.price,
+        specialPrice: item.specialPrice,
+        category: item.category,
+        description: item.description,
+        rawComposition: analysis.rawComposition,
+        naturalPercentage: analysis.naturalPercentage,
+        semiSyntheticPercentage: analysis.semiSyntheticPercentage,
+        syntheticPercentage: analysis.syntheticPercentage,
+        trafficLight: analysis.trafficLight,
+        hasSyntheticLining: analysis.hasSyntheticLining,
+        inStock: item.inStock,
+        isActive: item.inStock && hasValidComposition,
+        lastSeenAt: now,
+      };
+
+      await this.prisma.product.upsert({
+        where: {
+          brandId_externalId: {
             brandId: brand.id,
             externalId: item.externalId,
-            name: item.name,
-            slug: item.slug,
-            productUrl: item.productUrl,
-            imageUrl: item.imageUrl,
-            price: item.price,
-            specialPrice: item.specialPrice,
-            category: item.category,
-            description: item.description,
-            rawComposition: analysis.rawComposition,
-            naturalPercentage: analysis.naturalPercentage,
-            semiSyntheticPercentage: analysis.semiSyntheticPercentage,
-            syntheticPercentage: analysis.syntheticPercentage,
-            trafficLight: analysis.trafficLight,
-            hasSyntheticLining: analysis.hasSyntheticLining,
-            inStock: item.inStock,
-            isActive: item.inStock && hasValidComposition,
-            lastSeenAt: now,
           },
-        });
-
-        await tx.productFiber.deleteMany({
-          where: { productId: upsertedProduct.id },
-        });
-
-        if (analysis.fibers.length > 0) {
-          await tx.productFiber.createMany({
-            data: analysis.fibers.map((f) => ({
-              productId: upsertedProduct.id,
-              fiberName: f.fiberName,
-              category: f.category,
-              percentage: f.percentage,
-              isLining: f.isLining,
-            })),
-          });
-        }
+        },
+        update: {
+          ...commonProductData,
+          fibers: {
+            deleteMany: {},
+            create: fiberRows,
+          },
+        },
+        create: {
+          brandId: brand.id,
+          externalId: item.externalId,
+          ...commonProductData,
+          fibers: {
+            create: fiberRows,
+          },
+        },
       });
     }
 

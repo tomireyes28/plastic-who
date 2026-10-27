@@ -29,9 +29,7 @@ export function CatalogExplorer({
   initialProducts,
 }: CatalogExplorerProps) {
   const [mode, setMode] = useState<ExploreMode>('brand');
-  const [selectedBrand, setSelectedBrand] = useState<string>(
-    initialBrands[0]?.slug || 'wanama',
-  );
+  const [selectedBrand, setSelectedBrand] = useState<string>('ALL');
   const [selectedMaterial, setSelectedMaterial] = useState<string>('algodón');
   const [selectedLight, setSelectedLight] = useState<TrafficLightColor | 'ALL'>(
     'ALL',
@@ -190,6 +188,17 @@ export function CatalogExplorer({
                   1. Seleccioná una tienda auditada
                 </div>
                 <div className="mt-2.5 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBrand('ALL')}
+                    className={`font-label cursor-pointer border px-3.5 py-2 text-xs font-bold uppercase transition-all ${
+                      selectedBrand === 'ALL'
+                        ? 'border-[#191c18] bg-[#191c18] text-[#f3efe6]'
+                        : 'border-[#cfc6b4] bg-[#f3efe6] text-[#191c18] hover:border-[#191c18]'
+                    }`}
+                  >
+                    Todas ({initialProducts.length})
+                  </button>
                   {initialBrands.map((b) => {
                     const active = selectedBrand === b.slug;
                     return (

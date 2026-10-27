@@ -14,7 +14,8 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "scrape:wanama": "node dist/scraper/run-scrape-cli.js wanama 15"
+    "scrape:wanama": "node dist/scraper/run-scrape-cli.js wanama 35",
+    "scrape:all": "node dist/scraper/run-scrape-cli.js all 30"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
