@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum StorePlatform {
+  POW
+  VTEX
+  TIENDANUBE
+  SHOPIFY
+  OTHER
+}
+
+enum FiberCategory {
+  NATURAL
+  SEMISYNTHETIC
+  SYNTHETIC
+}
+
+enum TrafficLightColor {
+  GREEN
+  YELLOW
+  RED
+}
+
+model Brand {
+  id            String        @id @default(uuid())
+  name          String
+  slug          String        @unique
+  websiteUrl    String
+  platform      StorePlatform @default(OTHER)
+  isKnownBrand  Boolean       @default(true)
+  isActive      Boolean       @default(true)
+  lastScrapedAt DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  products      Product[]
+
+  @@index([isActive])
+}
+
+model Product {
+  id                      String            @id @default(uuid())
+  brandId                 String
+  externalId              String
+  name                    String
+  slug                    String
+  productUrl              String
+  imageUrl                String?
+  price                   Float?
+  specialPrice            Float?
+  category                String?
+  description             String?
+  rawComposition          String?
+  naturalPercentage       Float             @default(0)
+  semiSyntheticPercentage Float             @default(0)
+  syntheticPercentage     Float             @default(0)
+  trafficLight            TrafficLightColor @default(RED)
+  hasSyntheticLining      Boolean           @default(false)
+  inStock                 Boolean           @default(true)
+  isActive                Boolean           @default(true)
+  lastSeenAt              DateTime          @default(now())
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  brand                   Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  fibers                  ProductFiber[]
+
+  @@unique([brandId, externalId])
+  @@index([brandId, isActive])
+  @@index([trafficLight, naturalPercentage])
+}
+
+model ProductFiber {
+  id         String        @id @default(uuid())
+  productId  String
+  fiberName  String
+  category   FiberCategory
+  percentage Float
+  isLining   Boolean       @default(false)
+
+  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([fiberName, percentage])
+  @@index([productId])
+}
