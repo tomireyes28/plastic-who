@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trama: ropa por composición</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6f2;--surface:#ffffff;--ink:#1d2a23;--muted:#5d6b63;--line:#d9ded6;--sel:#24365f;--selink:#ffffff;
+--nat:#3f6b4f;--semi:#c9992b;--syn:#b5473a;--chip:#e8ece4;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a16;--surface:#1d2520;--ink:#eef1ec;--muted:#a3b0a8;--line:#323d36;--sel:#9db4ee;--selink:#10182e;--nat:#6fae86;--semi:#dcae45;--syn:#d9766a;--chip:#26302a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141a16;--surface:#1d2520;--ink:#eef1ec;--muted:#a3b0a8;--line:#323d36;--sel:#9db4ee;--selink:#10182e;--nat:#6fae86;--semi:#dcae45;--syn:#d9766a;--chip:#26302a;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 "DM Sans",system-ui,sans-serif;max-width:560px;margin-inline:auto;padding:20px 16px 48px}
+h1{font:700 34px/1.05 "Fraunces",Georgia,serif;margin:8px 0 6px}
+h2{font:600 20px/1.2 "Fraunces",Georgia,serif;margin:22px 0 8px}
+p{margin:0 0 10px}
+.sub{color:var(--muted);margin-bottom:16px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--chip);border-radius:12px;padding:4px;gap:4px;margin-bottom:14px}
+.seg button{border:0;background:transparent;color:var(--ink);font:500 15px "DM Sans",sans-serif;padding:11px 8px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--sel);color:var(--selink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.chips button{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px "DM Sans",sans-serif;padding:9px 14px;border-radius:999px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--sel);color:var(--selink);border-color:var(--sel)}
+.group{color:var(--muted);font-size:14px;margin:12px 0 0}
+button:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+.note{background:var(--chip);border-radius:12px;padding:12px 14px;font-size:14px;margin:6px 0 14px}
+.note b{font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.name{font-weight:700}
+.brand{color:var(--muted);font-size:14px}
+.badge{flex:none;font-size:13px;font-weight:700;padding:5px 10px;border-radius:999px;color:#fff}
+.v{background:var(--nat)}.a{background:var(--semi);color:#1d1a10}.r{background:var(--syn)}
+.weave{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:12px 0 8px;gap:2px}
+.weave i{display:block;height:100%}
+.n{background:var(--nat)}.s{background:var(--semi)}.y{background:var(--syn)}
+.comp{font-size:14px;color:var(--ink)}
+.meta{font-size:13px;color:var(--muted);margin-top:4px}
+.go{display:inline-block;margin-top:10px;font-size:14px;font-weight:700;color:var(--sel);text-decoration:none}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin:4px 0 12px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;background:var(--c)}
+.similar{border:1px dashed var(--line);border-radius:14px;padding:14px;margin:6px 0 16px}
+.similar button{margin-top:6px;border:0;background:var(--sel);color:var(--selink);font:700 14px "DM Sans",sans-serif;padding:10px 14px;border-radius:10px;cursor:pointer}
+details{border-top:1px solid var(--line);margin-top:22px;padding:12px 0 0}
+summary{cursor:pointer;font-weight:700}
+.empty{color:var(--muted);padding:20px 4px}
+</style>
+</head>
+<body>
+<h1>Trama</h1>
+<p class="sub">Ropa filtrada por lo que está hecha, no por lo que dice la etiqueta de marketing.</p>
+<div class="note"><b>Prototipo con datos de ejemplo.</b> Solo las dos prendas de Wanama marcadas como verificadas se leyeron de su ficha real; el resto está inventado para mostrar cómo funciona.</div>
+
+<div class="seg" role="group" aria-label="Cómo explorar">
+<button id="tBrand" aria-pressed="true">Por marca</button>
+<button id="tMat" aria-pressed="false">Por material</button>
+</div>
+
+<div id="chips" class="chips"></div>
+<div id="extra"></div>
+<div class="legend"><span style="--c:var(--nat)">Natural</span><span style="--c:var(--semi)">Semisintética</span><span style="--c:var(--syn)">Sintética</span></div>
+<div id="list"></div>
+
+<details>
+<summary>¿Cómo se calcula el semáforo?</summary>
+<p style="margin-top:10px">Reglas de ejemplo, para que las definas vos:</p>
+<p><b>Verde:</b> 95% o más de fibras naturales.<br><b>Amarillo:</b> entre 70% y 94% naturales, o con viscosa, lyocell o modal.<br><b>Rojo:</b> menos de 70% naturales.</p>
+<p class="meta">Pendiente de decidir: cuánto elastano se tolera en un jean, y qué hacer con forros sintéticos.</p>
+</details>
+
+<script>
+var NAT=["algodón","lino","ramié","lana","seda","cáñamo"],SEMI=["viscosa","lyocell","modal"];
+var BRANDS={known:["Wanama","Free People"],other:["Marca ejemplo"]};
+var ITEMS=[
+{b:"Wanama",n:"Camisa New Margarite",c:{"ramié":100},v:true,u:"https://www.wanama.com/productos/113-3367_-_camisa_new_margarite"},
+{b:"Wanama",n:"Remera Berthie Pima II",c:{"algodón":100},v:true,u:"https://www.wanama.com/productos/110-3313_-_remera_berthie_pima_ii"},
+{b:"Wanama",n:"Jean de ejemplo",c:{"algodón":98,"elastano":2}},
+{b:"Wanama",n:"Vestido de ejemplo",c:{"viscosa":55,"poliéster":45}},
+{b:"Wanama",n:"Sweater de ejemplo",c:{"lana":70,"acrílico":30}},
+{b:"Marca ejemplo",n:"Pantalón de ejemplo",c:{"lino":100}},
+{b:"Marca ejemplo",n:"Blusa de ejemplo",c:{"algodón":60,"poliéster":40}}
+];
+var state={tab:"brand",brand:"Wanama",mat:"algodón"};
+function kind(f){return NAT.indexOf(f)>-1?"n":SEMI.indexOf(f)>-1?"s":"y"}
+function pctNat(c){var t=0;for(var f in c){if(kind(f)==="n")t+=c[f]}return t}
+function light(c){var p=pctNat(c),hasSemi=Object.keys(c).some(function(f){return kind(f)==="s"});
+ if(p>=95)return["v","Verde"];if(p>=70||hasSemi)return["a","Amarillo"];return["r","Rojo"]}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function card(it){
+ var l=light(it.c),segs="",txt=[];
+ Object.keys(it.c).forEach(function(f){segs+='<i class="'+kind(f)+'" style="flex:'+it.c[f]+'" title="'+f+'"></i>';txt.push(it.c[f]+"% "+f)});
+ return '<div class="card"><div class="top"><div><div class="name">'+it.n+'</div><div class="brand">'+it.b+'</div></div><span class="badge '+l[0]+'">'+l[1]+'</span></div>'+
+ '<div class="weave" role="img" aria-label="'+txt.join(", ")+'">'+segs+'</div>'+
+ '<div class="comp">'+txt.join(", ")+'</div>'+
+ '<div class="meta">'+pctNat(it.c)+'% natural · '+(it.v?"verificado en la ficha de la tienda":"dato de ejemplo")+'</div>'+
+ (it.u?'<a class="go" href="'+it.u+'" target="_blank" rel="noopener">Ver en la tienda</a>':'')+'</div>';
+}
+function chip(label,pressed,attr){return '<button data-k="'+attr+'" data-v="'+label+'" aria-pressed="'+pressed+'">'+label+'</button>'}
+function render(){
+ document.getElementById("tBrand").setAttribute("aria-pressed",state.tab==="brand");
+ document.getElementById("tMat").setAttribute("aria-pressed",state.tab==="mat");
+ var chips="",extra="",list=[];
+ if(state.tab==="brand"){
+  chips+='<div class="group" style="width:100%">Marcas conocidas</div>';
+  BRANDS.known.forEach(function(b){chips+=chip(b,state.brand===b,"brand")});
+  chips+='<div class="group" style="width:100%">Marcas menos conocidas</div>';
+  BRANDS.other.forEach(function(b){chips+=chip(b,state.brand===b,"brand")});
+  list=ITEMS.filter(function(i){return i.b===state.brand});
+  if(state.brand==="Free People"){
+   extra='<div class="similar"><div class="name">Free People no se vende en Argentina</div><p class="brand">Recomendación de la curadora (ejemplo): Wanama tiene prendas de aire parecido.</p><button data-k="brand" data-v="Wanama">Ver Wanama</button></div>';
+  }
+ }else{
+  ["algodón","lino","lana","otros naturales"].forEach(function(m){chips+=chip(cap(m),state.mat===m,"mat").replace('data-v="'+cap(m)+'"','data-v="'+m+'"')});
+  list=ITEMS.filter(function(i){
+   if(state.mat==="otros naturales")return Object.keys(i.c).some(function(f){return kind(f)==="n"&&["algodón","lino","lana"].indexOf(f)<0});
+   return i.c[state.mat]>0});
+  list.sort(function(a,b){return pctNat(b.c)-pctNat(a.c)});
+  extra='<p class="meta">Dentro de cada material hay prendas puras y mezclas. Mirá siempre el porcentaje.</p>';
+ }
+ document.getElementById("chips").innerHTML=chips;
+ document.getElementById("extra").innerHTML=extra;
+ document.getElementById("list").innerHTML=list.length?list.map(card).join(""):'<div class="empty">Todavía no hay prendas cargadas para esta marca. Cuando se sume, se rastrea su catálogo y aparece acá.</div>';
+}
+document.addEventListener("click",function(e){
+ var t=e.target.closest("button");if(!t)return;
+ if(t.id==="tBrand"){state.tab="brand"}else if(t.id==="tMat"){state.tab="mat"}
+ else if(t.dataset.k==="brand"){state.brand=t.dataset.v}
+ else if(t.dataset.k==="mat"){state.mat=t.dataset.v}
+ else return;
+ render();
+});
+render();
+</script>
+</body>
+</html>
