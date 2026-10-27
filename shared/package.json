@@ -1,0 +1,8 @@
+{
+  "name": "@plastic-who/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tipos y constantes compartidas entre api, web y mobile",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts"
+}
