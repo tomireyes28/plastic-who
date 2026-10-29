@@ -6,8 +6,10 @@ import {
   ProductCardItem,
   TrafficLightColor,
 } from '../types/catalog';
+import { ContactModal } from './ContactModal';
 import { FiberGuideView } from './FiberGuideView';
 import { GarmentCard } from './GarmentCard';
+import { TrafficLightInfoModal } from './TrafficLightInfoModal';
 
 interface CatalogExplorerProps {
   initialBrands: BrandSummary[];
@@ -15,12 +17,20 @@ interface CatalogExplorerProps {
 }
 
 type ExploreMode = 'brand' | 'material' | 'guide';
+type SortOption =
+  | 'natural_desc'
+  | 'price_asc'
+  | 'price_desc'
+  | 'name_asc'
+  | 'natural_asc';
 
 const MATERIAL_OPTIONS = [
   { key: 'algodón', label: 'Algodón' },
   { key: 'lino', label: 'Lino' },
+  { key: 'bambú', label: 'Bambú' },
   { key: 'ramié', label: 'Ramié' },
   { key: 'lana', label: 'Lana' },
+  { key: 'seda', label: 'Seda' },
   { key: 'viscosa', label: 'Viscosa / Lyocell' },
 ];
 
@@ -36,7 +46,12 @@ export function CatalogExplorer({
   );
   const [selectedCategory, setSelectedCategory] = useState<string>('TODAS');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortOption, setSortOption] = useState<SortOption>('natural_desc');
   const [visibleCount, setVisibleCount] = useState<number>(36);
+
+  // Estados de modales
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // Categorías únicas presentes en las prendas cargadas
   const categories = useMemo(() => {
@@ -59,7 +74,7 @@ export function CatalogExplorer({
           const hasMat = product.fibers.some((f) => {
             if (f.isLining || f.percentage <= 0) return false;
             if (selectedMaterial === 'viscosa') {
-              return ['viscosa', 'lyocell', 'modal'].includes(
+              return ['viscosa', 'lyocell', 'modal', 'tencel', 'rayón', 'rayon'].includes(
                 f.fiberName.toLowerCase(),
               );
             }
@@ -82,15 +97,42 @@ export function CatalogExplorer({
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
           const matchName = product.name.toLowerCase().includes(q);
+          const matchBrand = product.brand.name.toLowerCase().includes(q);
+          const matchCat = product.category?.toLowerCase().includes(q);
           const matchComp = (product.rawComposition || '')
             .toLowerCase()
             .includes(q);
-          if (!matchName && !matchComp) return false;
+          const matchFiber = product.fibers.some((f) =>
+            f.fiberName.toLowerCase().includes(q),
+          );
+
+          if (!matchName && !matchBrand && !matchCat && !matchComp && !matchFiber) {
+            return false;
+          }
         }
 
         return true;
       })
-      .sort((a, b) => b.naturalPercentage - a.naturalPercentage);
+      .sort((a, b) => {
+        if (sortOption === 'price_asc') {
+          if (a.price === null) return 1;
+          if (b.price === null) return -1;
+          return a.price - b.price;
+        }
+        if (sortOption === 'price_desc') {
+          if (a.price === null) return 1;
+          if (b.price === null) return -1;
+          return b.price - a.price;
+        }
+        if (sortOption === 'name_asc') {
+          return a.name.localeCompare(b.name);
+        }
+        if (sortOption === 'natural_asc') {
+          return a.naturalPercentage - b.naturalPercentage;
+        }
+        // default: natural_desc
+        return b.naturalPercentage - a.naturalPercentage;
+      });
   }, [
     initialProducts,
     mode,
@@ -99,6 +141,7 @@ export function CatalogExplorer({
     selectedLight,
     selectedCategory,
     searchQuery,
+    sortOption,
   ]);
 
   // Listado recortado para renderizado fluido en el DOM
@@ -121,22 +164,56 @@ export function CatalogExplorer({
     return { total: filteredProducts.length, green, yellow, red, unknown };
   }, [filteredProducts]);
 
+  const hasActiveFilters =
+    selectedBrand !== 'ALL' ||
+    selectedLight !== 'ALL' ||
+    selectedCategory !== 'TODAS' ||
+    searchQuery.trim().length > 0;
+
+  function clearAllFilters() {
+    setSelectedBrand('ALL');
+    setSelectedLight('ALL');
+    setSelectedCategory('TODAS');
+    setSearchQuery('');
+    setSortOption('natural_desc');
+    setVisibleCount(36);
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 pt-6 pb-20 sm:px-6">
       {/* Cabecera Editorial */}
       <header className="border-b-2 border-[#191c18] pb-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="font-label inline-block bg-[#191c18] px-2.5 py-1 text-[11px] font-bold tracking-widest text-[#f3efe6] uppercase">
-            ARCHIVO TEXTIL · EDICIÓN ARGENTINA
+            PLASTIC WHO? · ARCHIVO Y AUDITORÍA TEXTIL
           </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsInfoOpen(true)}
+              className="font-label cursor-pointer border border-[#cfc6b4] bg-[#f3efe6] px-2.5 py-1 text-[11px] font-bold text-[#191c18] transition-colors hover:border-[#191c18] hover:bg-[#191c18] hover:text-[#f3efe6]"
+            >
+              ℹ️ Criterio
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsContactOpen(true)}
+              className="font-label cursor-pointer border border-[#2b593f] bg-[#2b593f] px-2.5 py-1 text-[11px] font-bold text-[#f3efe6] transition-colors hover:bg-[#1f442f]"
+            >
+              ✉️ Sugerir marca
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="font-editorial text-4xl leading-none font-bold tracking-tight text-[#191c18] sm:text-5xl">
+            Plastic Who?
+          </h1>
           <span className="font-label text-xs text-[#5a5d55]">
-            {initialProducts.length} fichas auditadas en base de datos
+            {initialProducts.length.toLocaleString('es-AR')} prendas auditadas
           </span>
         </div>
 
-        <h1 className="font-editorial mt-4 text-4xl leading-none font-bold tracking-tight text-[#191c18] sm:text-5xl">
-          Plastic Who?
-        </h1>
         <p className="mt-2.5 max-w-xl text-base leading-relaxed text-[#494c45]">
           Ropa filtrada por lo que realmente está hecha en su etiqueta interna,
           no por lo que promete el marketing de temporada.
@@ -209,7 +286,7 @@ export function CatalogExplorer({
                         : 'border-[#cfc6b4] bg-[#f3efe6] text-[#191c18] hover:border-[#191c18]'
                     }`}
                   >
-                    Todas ({initialProducts.length})
+                    Todas ({initialProducts.length.toLocaleString('es-AR')})
                   </button>
                   {initialBrands.map((b) => {
                     const active = selectedBrand === b.slug;
@@ -264,12 +341,60 @@ export function CatalogExplorer({
               </div>
             )}
 
-            {/* Filtros secundarios: Semáforo + Categoría + Buscador */}
+            {/* Barra de Búsqueda Destacada */}
+            <div className="mt-4 border-t border-dashed border-[#d5cdbe] pt-4">
+              <label
+                htmlFor="search-input"
+                className="font-label block text-[11px] font-bold tracking-wider text-[#5a5d55] uppercase"
+              >
+                2. Buscador en tiempo real (prenda, tejido o color)
+              </label>
+              <div className="relative mt-1.5 flex items-center">
+                <span className="absolute left-3 text-sm text-[#8c887e]">
+                  🔍
+                </span>
+                <input
+                  id="search-input"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setVisibleCount(36);
+                  }}
+                  placeholder="Ej: lino, pijama bananas, camisa ramié, campera, bambú..."
+                  className="font-label w-full border border-[#cfc6b4] bg-[#f3efe6] py-2.5 pr-8 pl-9 text-xs text-[#191c18] placeholder:text-[#8c887e] focus:border-[#191c18] focus:bg-[#fbf9f5] focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setVisibleCount(36);
+                    }}
+                    className="absolute right-2.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-[#191c18]/10 text-xs text-[#191c18] hover:bg-[#191c18] hover:text-[#f3efe6]"
+                    aria-label="Limpiar búsqueda"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Filtros secundarios: Semáforo + Categoría + Ordenamiento */}
             <div className="mt-4 grid gap-3 border-t border-dashed border-[#d5cdbe] pt-4 sm:grid-cols-2">
               <div>
-                <label className="font-label block text-[11px] font-bold tracking-wider text-[#5a5d55] uppercase">
-                  Semáforo de Composición
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="font-label block text-[11px] font-bold tracking-wider text-[#5a5d55] uppercase">
+                    Semáforo Textil
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsInfoOpen(true)}
+                    className="font-label text-[10px] text-[#2b593f] underline hover:text-[#191c18]"
+                  >
+                    ¿Cómo funciona?
+                  </button>
+                </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {(
                     [
@@ -326,25 +451,94 @@ export function CatalogExplorer({
 
                 <div className="flex-1">
                   <label
-                    htmlFor="search-input"
+                    htmlFor="sort-select"
                     className="font-label block text-[11px] font-bold tracking-wider text-[#5a5d55] uppercase"
                   >
-                    Buscar prenda o fibra
+                    Ordenar Por
                   </label>
-                  <input
-                    id="search-input"
-                    type="search"
-                    value={searchQuery}
+                  <select
+                    id="sort-select"
+                    value={sortOption}
                     onChange={(e) => {
-                      setSearchQuery(e.target.value);
+                      setSortOption(e.target.value as SortOption);
                       setVisibleCount(36);
                     }}
-                    placeholder="Ej: camisa, ramié..."
-                    className="font-label mt-1.5 w-full border border-[#cfc6b4] bg-[#f3efe6] px-2.5 py-1.5 text-xs text-[#191c18] placeholder:text-[#8c887e] focus:border-[#191c18] focus:outline-none"
-                  />
+                    className="font-label mt-1.5 w-full border border-[#cfc6b4] bg-[#f3efe6] px-2.5 py-1.5 text-xs text-[#191c18] focus:border-[#191c18] focus:outline-none"
+                  >
+                    <option value="natural_desc">🌱 Más natural primero</option>
+                    <option value="price_asc">💵 Menor precio</option>
+                    <option value="price_desc">💎 Mayor precio</option>
+                    <option value="name_asc">🔤 Nombre (A-Z)</option>
+                    <option value="natural_asc">🧪 Menos natural primero</option>
+                  </select>
                 </div>
               </div>
             </div>
+
+            {/* Badges de filtros activos con botón limpiar */}
+            {hasActiveFilters && (
+              <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-dashed border-[#d5cdbe] pt-3">
+                <span className="font-label text-[10px] text-[#5a5d55] uppercase font-bold">
+                  Filtros activos:
+                </span>
+                {selectedBrand !== 'ALL' && (
+                  <span className="font-label inline-flex items-center gap-1 bg-[#191c18] px-2 py-0.5 text-[10px] font-bold text-[#f3efe6]">
+                    Tienda:{' '}
+                    {initialBrands.find((b) => b.slug === selectedBrand)?.name}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBrand('ALL')}
+                      className="cursor-pointer font-bold hover:text-[#c48b28]"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {selectedLight !== 'ALL' && (
+                  <span className="font-label inline-flex items-center gap-1 bg-[#191c18] px-2 py-0.5 text-[10px] font-bold text-[#f3efe6]">
+                    Semáforo: {selectedLight}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLight('ALL')}
+                      className="cursor-pointer font-bold hover:text-[#c48b28]"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {selectedCategory !== 'TODAS' && (
+                  <span className="font-label inline-flex items-center gap-1 bg-[#191c18] px-2 py-0.5 text-[10px] font-bold text-[#f3efe6]">
+                    Tipo: {selectedCategory}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory('TODAS')}
+                      className="cursor-pointer font-bold hover:text-[#c48b28]"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {searchQuery.trim() && (
+                  <span className="font-label inline-flex items-center gap-1 bg-[#191c18] px-2 py-0.5 text-[10px] font-bold text-[#f3efe6]">
+                    &ldquo;{searchQuery}&rdquo;
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="cursor-pointer font-bold hover:text-[#c48b28]"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="font-label text-[10px] font-bold text-[#8a281d] underline hover:text-[#191c18]"
+                >
+                  Limpiar todos
+                </button>
+              </div>
+            )}
           </section>
 
           {/* Leyenda de la trama */}
@@ -360,7 +554,13 @@ export function CatalogExplorer({
                 <span className="h-3 w-3 bg-[#b33c2e]" /> Sintética (Plástico)
               </span>
             </div>
-            <span>Ordenado de mayor a menor % natural</span>
+            <span className="text-[11px] opacity-80">
+              {sortOption === 'price_asc' && 'Ordenado por menor precio'}
+              {sortOption === 'price_desc' && 'Ordenado por mayor precio'}
+              {sortOption === 'name_asc' && 'Ordenado por nombre A-Z'}
+              {sortOption === 'natural_desc' && 'Ordenado por mayor pureza natural'}
+              {sortOption === 'natural_asc' && 'Ordenado por menor pureza natural'}
+            </span>
           </div>
 
           {/* Listado de Fichas */}
@@ -369,7 +569,8 @@ export function CatalogExplorer({
               <>
                 <div className="font-label flex items-center justify-between text-xs text-[#5a5d55]">
                   <span>
-                    Mostrando {displayedProducts.length} de {filteredProducts.length} prendas
+                    Mostrando {displayedProducts.length} de{' '}
+                    {filteredProducts.length.toLocaleString('es-AR')} prendas
                   </span>
                 </div>
                 {displayedProducts.map((product) => (
@@ -382,7 +583,8 @@ export function CatalogExplorer({
                       onClick={() => setVisibleCount((prev) => prev + 36)}
                       className="font-label cursor-pointer border border-[#191c18] bg-[#191c18] px-6 py-3 text-xs font-bold tracking-wider text-[#f3efe6] uppercase transition-colors hover:bg-[#333]"
                     >
-                      Cargar más prendas ({filteredProducts.length - visibleCount} restantes)
+                      Cargar más prendas ({filteredProducts.length - visibleCount}{' '}
+                      restantes)
                     </button>
                   </div>
                 )}
@@ -393,17 +595,12 @@ export function CatalogExplorer({
                   No encontramos prendas con esa combinación de filtros.
                 </p>
                 <p className="mt-1 text-sm text-[#5a5d55]">
-                  Probá cambiando el filtro del semáforo a &ldquo;Todos&rdquo; o
-                  eligiendo otra fibra.
+                  Probá cambiando el filtro del semáforo a &ldquo;Todos&rdquo;,
+                  borrando la búsqueda o seleccionando otra tienda.
                 </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedLight('ALL');
-                    setSelectedCategory('TODAS');
-                    setSearchQuery('');
-                    setVisibleCount(36);
-                  }}
+                  onClick={clearAllFilters}
                   className="font-label mt-4 cursor-pointer bg-[#191c18] px-4 py-2 text-xs font-bold tracking-wider text-[#f3efe6] uppercase"
                 >
                   Limpiar filtros
@@ -411,8 +608,39 @@ export function CatalogExplorer({
               </div>
             )}
           </section>
+
+          {/* Pie de página editorial */}
+          <footer className="mt-12 border-t-2 border-[#191c18] pt-6 pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <span className="font-editorial text-lg font-bold text-[#191c18]">
+                  Plastic Who?
+                </span>
+                <p className="font-label text-xs text-[#5a5d55]">
+                  plasticwho.com · Auditoría Textil Independiente
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsContactOpen(true)}
+                className="font-label cursor-pointer border border-[#191c18] bg-[#f3efe6] px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[#191c18] transition-colors hover:bg-[#191c18] hover:text-[#f3efe6]"
+              >
+                ✉️ Contacto: info@plasticwho.com
+              </button>
+            </div>
+          </footer>
         </>
       )}
+
+      {/* Modales */}
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+      />
+      <TrafficLightInfoModal
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+      />
     </div>
   );
 }

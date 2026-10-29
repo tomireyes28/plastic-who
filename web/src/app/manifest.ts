@@ -1,20 +1,25 @@
-import type { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Plastic Who? — Archivo y Auditoría Textil',
-    short_name: 'Plastic Who?',
+    name: 'Plastic Who? · Auditoría Textil',
+    short_name: 'Plastic Who',
     description:
-      'Ropa filtrada por su composición real de fibras naturales, semisintéticas y sintéticas.',
+      'Ropa filtrada por lo que realmente está hecha en su etiqueta interna, no por el marketing.',
     start_url: '/',
     display: 'standalone',
     background_color: '#f3efe6',
     theme_color: '#191c18',
     icons: [
       {
-        src: '/icon.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
+        src: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        src: '/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
       },
     ],
   };
