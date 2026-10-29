@@ -16,6 +16,9 @@
     "prisma:studio": "prisma studio",
     "scrape:wanama": "node dist/scraper/run-scrape-cli.js wanama 35",
     "scrape:india": "node dist/scraper/run-scrape-cli.js india-style 30",
+    "scrape:paula": "node dist/scraper/run-scrape-cli.js paula-cahen-danvers 30",
+    "scrape:rapsodia": "node dist/scraper/run-scrape-cli.js rapsodia 30",
+    "scrape:kosiuko": "node dist/scraper/run-scrape-cli.js kosiuko 30",
     "scrape:all": "node dist/scraper/run-scrape-cli.js all 30"
   },
   "dependencies": {
