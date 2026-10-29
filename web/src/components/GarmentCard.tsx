@@ -122,7 +122,7 @@ export function GarmentCard({ product }: GarmentCardProps) {
                 ) : (
                   <>
                     <span className="font-editorial text-2xl font-bold text-[#191c18]">
-                      {product.naturalPercentage}%
+                      {Math.min(100, Math.round(product.naturalPercentage))}%
                     </span>
                     <span className="font-label block text-[10px] tracking-wider text-[#5a5d55] uppercase">
                       natural
@@ -145,7 +145,7 @@ export function GarmentCard({ product }: GarmentCardProps) {
                     key={`${f.fiberName}-${i}`}
                     className="font-label inline-block bg-[#efeadf] px-2 py-0.5 text-xs font-bold text-[#191c18]"
                   >
-                    {f.percentage}% {f.fiberName}
+                    {Math.min(100, Math.round(f.percentage))}% {f.fiberName}
                   </span>
                 ))
               ) : (
