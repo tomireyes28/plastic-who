@@ -159,7 +159,10 @@ export function GarmentCard({ product }: GarmentCardProps) {
               <p className="font-label mt-2 border-l-2 border-[#b33c2e] pl-2 text-[11px] text-[#7d2319]">
                 Forrería sintética:{' '}
                 {liningFibers
-                  .map((f) => `${f.percentage}% ${f.fiberName}`)
+                  .map(
+                    (f) =>
+                      `${Math.min(100, Math.max(0, Math.round(f.percentage)))}% ${f.fiberName}`,
+                  )
                   .join(', ')}
               </p>
             )}

@@ -260,8 +260,11 @@ export class PaulaCahenDanversScraperAdapter implements StoreScraperAdapter {
 
       // Construcción enriquecida de descripción con panel de composición
       const ogDesc = ogDescMatch ? ogDescMatch[1] : '';
+      const cleanPanel = panelText
+        ? panelText.replace(/^composici[oó]n\s*:?\s*/i, '').trim()
+        : null;
       const description = [
-        panelText ? `Composición: ${panelText}` : null,
+        cleanPanel ? `Composición: ${cleanPanel}` : null,
         ogDesc,
       ]
         .filter(Boolean)

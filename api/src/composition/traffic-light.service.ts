@@ -63,10 +63,17 @@ export class TrafficLightService {
       }
     }
 
-    // Redondear a 1 decimal por si vienen porcentajes con coma (ej: 98.5%)
-    naturalPercentage = Math.round(naturalPercentage * 10) / 10;
-    semiSyntheticPercentage = Math.round(semiSyntheticPercentage * 10) / 10;
-    syntheticPercentage = Math.round(syntheticPercentage * 10) / 10;
+    // Redondear a 1 decimal y limitar rigurosamente a [0, 100]
+    naturalPercentage = Math.min(100, Math.max(0, Math.round(naturalPercentage * 10) / 10));
+    semiSyntheticPercentage = Math.min(100, Math.max(0, Math.round(semiSyntheticPercentage * 10) / 10));
+    syntheticPercentage = Math.min(100, Math.max(0, Math.round(syntheticPercentage * 10) / 10));
+
+    const totalCategoryPct = naturalPercentage + semiSyntheticPercentage + syntheticPercentage;
+    if (totalCategoryPct > 100) {
+      naturalPercentage = Math.min(100, Math.round((naturalPercentage / totalCategoryPct) * 1000) / 10);
+      semiSyntheticPercentage = Math.min(100, Math.round((semiSyntheticPercentage / totalCategoryPct) * 1000) / 10);
+      syntheticPercentage = Math.min(100, Math.round((syntheticPercentage / totalCategoryPct) * 1000) / 10);
+    }
 
     const hasSyntheticLining = liningFibers.some(
       (f) => f.category === 'SYNTHETIC' && f.percentage > 0,

@@ -18,6 +18,18 @@ export interface CompositionAnalysisResult {
   hasSyntheticLining: boolean;
 }
 
+const LINING_SECTION_REGEX =
+  /^(?:forrer[ií]a(?:\s*\([^)]*\))?|forro(?:-lining)?|interior|viso|lining)$/i;
+
+const SECONDARY_SECTION_REGEX =
+  /^(?:ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)$/i;
+
+const MAIN_SECTION_REGEX =
+  /^(?:exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|composici[oó]n)$/i;
+
+const SECTION_HEADER_REGEX =
+  /(?:^|[-.;|/•*\n]\s*|\s+)(exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|composici[oó]n|forrer[ií]a(?:\s*\([^)]*\))?|forro(?:-lining)?|interior|viso|lining|ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)(?:\s*[:\-]\s*|\s+(?=\d{1,3}\s*%|[a-záéíóúñA-ZÁÉÍÓÚÑ]+\s+\d{1,3}\s*%))/gi;
+
 @Injectable()
 export class CompositionParserService {
   constructor(private readonly trafficLightService: TrafficLightService) {}
@@ -119,82 +131,140 @@ export class CompositionParserService {
   }
 
   /**
-   * Parsea un segmento de composición (ej: "98% Algodón - 2% Elastano. Forrería: 100% Poliéster"
-   * o formato VTEX "LINO 40%, VISCOSA 60%") separando tela principal de forrería.
+   * Parsea un segmento de composición (ej: "98% Algodón - 2% Elastano. Forrería: 100% Poliéster",
+   * "100% ALGODÓN - RIBB: 100% ALGODÓN" o formato VTEX "LINO 40%, VISCOSA 60%") separando tela principal,
+   * forrería y partes secundarias (rib, cuello, puños, combinaciones), garantizando que nunca se supere el 100%.
    */
   extractFibersFromSegment(segment: string): ParsedFiberItem[] {
     if (!segment) return [];
 
-    const results: ParsedFiberItem[] = [];
-
-    // Dividir en sub-bloques si existen etiquetas como "Exterior:", "Género base:", "Forrería:", "Forro:", "Interior:"
-    const sectionRegex =
-      /(?:^|[.;|/]\s*|\s+)(exterior|tejido\s*principal|g[eé]nero\s*base|tela\s*base|base|cuerpo|forrer[ií]a|forro|interior)\s*:\s*/gi;
-
-    const sections: Array<{ isLining: boolean; text: string }> = [];
+    const rawSections: Array<{
+      type: 'MAIN' | 'LINING' | 'SECONDARY';
+      text: string;
+    }> = [];
     let lastIndex = 0;
-    let currentIsLining = false;
+    let currentType: 'MAIN' | 'LINING' | 'SECONDARY' = 'MAIN';
     let match: RegExpExecArray | null;
 
-    while ((match = sectionRegex.exec(segment)) !== null) {
+    SECTION_HEADER_REGEX.lastIndex = 0;
+    while ((match = SECTION_HEADER_REGEX.exec(segment)) !== null) {
       const precedingText = segment.slice(lastIndex, match.index).trim();
       if (precedingText) {
-        sections.push({ isLining: currentIsLining, text: precedingText });
+        rawSections.push({ type: currentType, text: precedingText });
       }
-      const label = match[1].toLowerCase();
-      currentIsLining =
-        label.startsWith('forr') || label.startsWith('interior');
-      lastIndex = sectionRegex.lastIndex;
+      const label = match[1].toLowerCase().trim();
+      if (LINING_SECTION_REGEX.test(label)) {
+        currentType = 'LINING';
+      } else if (SECONDARY_SECTION_REGEX.test(label)) {
+        currentType = 'SECONDARY';
+      } else if (MAIN_SECTION_REGEX.test(label)) {
+        currentType = 'MAIN';
+      }
+      lastIndex = SECTION_HEADER_REGEX.lastIndex;
     }
 
     const remainingText = segment.slice(lastIndex).trim();
     if (remainingText) {
-      sections.push({ isLining: currentIsLining, text: remainingText });
+      rawSections.push({ type: currentType, text: remainingText });
     }
 
-    for (const sec of sections) {
-      // Soportar tanto "98% Algodón" como formato VTEX "ALGODÓN PIMA 100%" / "LINO 40%, VISCOSA 60%"
+    const mainFibers: ParsedFiberItem[] = [];
+    const liningFibers: ParsedFiberItem[] = [];
+    const secondaryFibers: ParsedFiberItem[] = [];
+
+    const parseSectionText = (
+      text: string,
+      isLining: boolean,
+      targetList: ParsedFiberItem[],
+    ) => {
       const pctFirstRegex =
         /(\d{1,3}(?:[.,]\d+)?)\s*%\s*([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+){0,2})/gi;
       const nameFirstRegex =
         /([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+){0,2})\s+(\d{1,3}(?:[.,]\d+)?)\s*%/gi;
 
-      let foundInSection = false;
+      let found = false;
       let m: RegExpExecArray | null;
 
-      while ((m = pctFirstRegex.exec(sec.text)) !== null) {
+      while ((m = pctFirstRegex.exec(text)) !== null) {
         const pct = parseFloat(m[1].replace(',', '.'));
         const rawFiber = m[2];
         const resolved = resolveFiber(rawFiber);
         if (resolved && pct > 0 && pct <= 100) {
-          this.addOrMergeFiber(results, {
+          this.addOrMergeFiber(targetList, {
             fiberName: resolved.canonicalName,
             category: resolved.category,
             percentage: pct,
-            isLining: sec.isLining,
+            isLining,
           });
-          foundInSection = true;
+          found = true;
         }
       }
 
-      if (!foundInSection) {
-        while ((m = nameFirstRegex.exec(sec.text)) !== null) {
+      if (!found) {
+        while ((m = nameFirstRegex.exec(text)) !== null) {
           const rawFiber = m[1];
           const pct = parseFloat(m[2].replace(',', '.'));
           const resolved = resolveFiber(rawFiber);
           if (resolved && pct > 0 && pct <= 100) {
-            this.addOrMergeFiber(results, {
+            this.addOrMergeFiber(targetList, {
               fiberName: resolved.canonicalName,
               category: resolved.category,
               percentage: pct,
-              isLining: sec.isLining,
+              isLining,
             });
           }
         }
       }
+    };
+
+    for (const sec of rawSections) {
+      if (sec.type === 'MAIN') {
+        const currentSum = mainFibers.reduce((s, f) => s + f.percentage, 0);
+        // Si ya tenemos una composición completa de tela base (>=99.5%), no duplicar con bloques repetidos
+        if (currentSum < 99.5) {
+          parseSectionText(sec.text, false, mainFibers);
+        }
+      } else if (sec.type === 'LINING') {
+        const currentSum = liningFibers.reduce((s, f) => s + f.percentage, 0);
+        if (currentSum < 99.5) {
+          parseSectionText(sec.text, true, liningFibers);
+        }
+      } else if (sec.type === 'SECONDARY') {
+        parseSectionText(sec.text, false, secondaryFibers);
+      }
     }
 
-    return results;
+    // Fallback: si no se detectó tela principal pero sí secciones secundarias (ej: prenda que solo reportó rib)
+    const effectiveMain = mainFibers.length > 0 ? mainFibers : secondaryFibers;
+
+    const normalizeList = (fibers: ParsedFiberItem[]): ParsedFiberItem[] => {
+      if (fibers.length === 0) return [];
+      for (const f of fibers) {
+        f.percentage = Math.min(
+          100,
+          Math.max(0, Math.round(f.percentage * 10) / 10),
+        );
+      }
+      const total = fibers.reduce((sum, f) => sum + f.percentage, 0);
+      if (total > 100) {
+        let running = 0;
+        for (let i = 0; i < fibers.length; i++) {
+          if (i === fibers.length - 1) {
+            fibers[i].percentage = Math.max(
+              0,
+              Math.round((100 - running) * 10) / 10,
+            );
+          } else {
+            fibers[i].percentage =
+              Math.round(((fibers[i].percentage / total) * 100) * 10) / 10;
+            running += fibers[i].percentage;
+          }
+        }
+      }
+      return fibers;
+    };
+
+    return [...normalizeList(effectiveMain), ...normalizeList(liningFibers)];
   }
 
   private addOrMergeFiber(
@@ -205,10 +275,18 @@ export class CompositionParserService {
       (f) => f.fiberName === item.fiberName && f.isLining === item.isLining,
     );
     if (existing) {
-      existing.percentage =
-        Math.round((existing.percentage + item.percentage) * 10) / 10;
+      existing.percentage = Math.min(
+        100,
+        Math.round((existing.percentage + item.percentage) * 10) / 10,
+      );
     } else {
-      list.push(item);
+      list.push({
+        ...item,
+        percentage: Math.min(
+          100,
+          Math.max(0, Math.round(item.percentage * 10) / 10),
+        ),
+      });
     }
   }
 }

@@ -97,4 +97,78 @@ describe('CompositionParserService', () => {
     expect(result.fibers).toHaveLength(0);
     expect(result.trafficLight).toBe('UNKNOWN');
   });
+
+  it('no debe superar 100% cuando una prenda detalla cuello/ribb separado (ej: Paula Cahen D\'Anvers)', () => {
+    const paulaRemera =
+      'Composición: Composición : 100% ALGODÓN - RIBB: 100% ALGODÓN\n\nRemera Pink de algodón';
+    const result = parser.parseFromText(paulaRemera);
+
+    expect(result.naturalPercentage).toBe(100);
+    expect(result.fibers).toEqual([
+      {
+        fiberName: 'algodón',
+        category: 'NATURAL',
+        percentage: 100,
+        isLining: false,
+      },
+    ]);
+    expect(result.trafficLight).toBe('GREEN');
+  });
+
+  it('no debe duplicar porcentajes si el CMS repite bloques de tela base (ej: Portsaid)', () => {
+    const repeatedComp =
+      'Composición: Tela Base: ALGODÓN 100% - GENERO COMBINACION: ALGODÓN 100% Tela Base: ALGODÓN 100% - GENERO COMBINACION: ALGODÓN 100%';
+    const result = parser.parseFromText(repeatedComp);
+
+    expect(result.naturalPercentage).toBe(100);
+    expect(result.fibers).toEqual([
+      {
+        fiberName: 'algodón',
+        category: 'NATURAL',
+        percentage: 100,
+        isLining: false,
+      },
+    ]);
+  });
+
+  it('debe separar Forrería sin dos puntos y limitar forro a 100%', () => {
+    const paulaVestido =
+      'Composición: Composición : 100% algodón Forreria 100% algodón';
+    const result = parser.parseFromText(paulaVestido);
+
+    expect(result.naturalPercentage).toBe(100);
+    expect(result.fibers).toEqual([
+      {
+        fiberName: 'algodón',
+        category: 'NATURAL',
+        percentage: 100,
+        isLining: false,
+      },
+      {
+        fiberName: 'algodón',
+        category: 'NATURAL',
+        percentage: 100,
+        isLining: true,
+      },
+    ]);
+    expect(result.trafficLight).toBe('GREEN');
+  });
+
+  it('debe priorizar tela base sobre género combinación sin superar 100%', () => {
+    const remeraMix =
+      'Composición: ALGODON 100% - GENERO COMBINACION: ALGODON 20%, POLIESTER 80%';
+    const result = parser.parseFromText(remeraMix);
+
+    expect(result.naturalPercentage).toBe(100);
+    expect(result.syntheticPercentage).toBe(0);
+    expect(result.fibers).toEqual([
+      {
+        fiberName: 'algodón',
+        category: 'NATURAL',
+        percentage: 100,
+        isLining: false,
+      },
+    ]);
+    expect(result.trafficLight).toBe('GREEN');
+  });
 });

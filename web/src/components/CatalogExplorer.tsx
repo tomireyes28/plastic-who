@@ -128,10 +128,16 @@ export function CatalogExplorer({
           return a.name.localeCompare(b.name);
         }
         if (sortOption === 'natural_asc') {
-          return a.naturalPercentage - b.naturalPercentage;
+          return (
+            Math.min(100, a.naturalPercentage) -
+            Math.min(100, b.naturalPercentage)
+          );
         }
         // default: natural_desc
-        return b.naturalPercentage - a.naturalPercentage;
+        return (
+          Math.min(100, b.naturalPercentage) -
+          Math.min(100, a.naturalPercentage)
+        );
       });
   }, [
     initialProducts,
