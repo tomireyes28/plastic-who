@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CompositionModule } from '../composition/composition.module';
+import { IndiaStyleScraperAdapter } from './adapters/india-style-scraper.adapter';
 import { MarkovaScraperAdapter } from './adapters/markova-scraper.adapter';
 import { VtexScraperAdapter } from './adapters/vtex-scraper.adapter';
 import { WanamaScraperAdapter } from './adapters/wanama-scraper.adapter';
@@ -13,14 +14,17 @@ import { ScraperService } from './scraper.service';
   providers: [
     WanamaScraperAdapter,
     MarkovaScraperAdapter,
+    IndiaStyleScraperAdapter,
     {
       provide: STORE_SCRAPER_ADAPTERS,
       useFactory: (
         wanamaAdapter: WanamaScraperAdapter,
         markovaAdapter: MarkovaScraperAdapter,
+        indiaStyleAdapter: IndiaStyleScraperAdapter,
       ) => [
         wanamaAdapter,
         markovaAdapter,
+        indiaStyleAdapter,
         new VtexScraperAdapter({
           name: 'Portsaid',
           slug: 'portsaid',
@@ -36,7 +40,11 @@ import { ScraperService } from './scraper.service';
           isKnownBrand: true,
         }),
       ],
-      inject: [WanamaScraperAdapter, MarkovaScraperAdapter],
+      inject: [
+        WanamaScraperAdapter,
+        MarkovaScraperAdapter,
+        IndiaStyleScraperAdapter,
+      ],
     },
     ScraperService,
   ],

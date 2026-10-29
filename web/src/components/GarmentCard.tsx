@@ -36,6 +36,13 @@ const STAMP_CONFIG: Record<
       'border-[#b33c2e]/40 bg-[#b33c2e]/10 text-[#7d2319]',
     dotClass: 'bg-[#b33c2e]',
   },
+  UNKNOWN: {
+    label: 'GRIS · NO INDICA',
+    sublabel: 'Composición no informada',
+    badgeClass:
+      'border-[#8c887b]/40 bg-[#8c887b]/10 text-[#4f4d46]',
+    dotClass: 'bg-[#8c887b]',
+  },
 };
 
 export function GarmentCard({ product }: GarmentCardProps) {
@@ -61,6 +68,11 @@ export function GarmentCard({ product }: GarmentCardProps) {
                 {product.category}
               </span>
             </>
+          )}
+          {!product.inStock && (
+            <span className="font-label rounded-xs border border-[#cfc6b4] bg-[#ece7dc] px-1.5 py-0.2 text-[9px] font-bold tracking-wider text-[#7c7a72] uppercase">
+              Sin stock
+            </span>
           )}
         </div>
 
@@ -98,12 +110,25 @@ export function GarmentCard({ product }: GarmentCardProps) {
                 {product.name}
               </h3>
               <div className="shrink-0 text-right">
-                <span className="font-editorial text-2xl font-bold text-[#191c18]">
-                  {product.naturalPercentage}%
-                </span>
-                <span className="font-label block text-[10px] tracking-wider text-[#5a5d55] uppercase">
-                  natural
-                </span>
+                {product.trafficLight === 'UNKNOWN' ? (
+                  <>
+                    <span className="font-editorial text-lg font-bold text-[#7c7a72]">
+                      No indica
+                    </span>
+                    <span className="font-label block text-[10px] tracking-wider text-[#7c7a72] uppercase">
+                      composición
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-editorial text-2xl font-bold text-[#191c18]">
+                      {product.naturalPercentage}%
+                    </span>
+                    <span className="font-label block text-[10px] tracking-wider text-[#5a5d55] uppercase">
+                      natural
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -114,14 +139,20 @@ export function GarmentCard({ product }: GarmentCardProps) {
 
             {/* Desglose exacto de fibras */}
             <div className="mt-2.5 flex flex-wrap gap-1.5">
-              {mainFibers.map((f, i) => (
-                <span
-                  key={`${f.fiberName}-${i}`}
-                  className="font-label inline-block bg-[#efeadf] px-2 py-0.5 text-xs font-bold text-[#191c18]"
-                >
-                  {f.percentage}% {f.fiberName}
+              {mainFibers.length > 0 ? (
+                mainFibers.map((f, i) => (
+                  <span
+                    key={`${f.fiberName}-${i}`}
+                    className="font-label inline-block bg-[#efeadf] px-2 py-0.5 text-xs font-bold text-[#191c18]"
+                  >
+                    {f.percentage}% {f.fiberName}
+                  </span>
+                ))
+              ) : (
+                <span className="font-label inline-block bg-[#efeadf] px-2 py-0.5 text-xs text-[#7c7a72] italic">
+                  {product.rawComposition || 'No indica composición en la tienda'}
                 </span>
-              ))}
+              )}
             </div>
 
             {product.hasSyntheticLining && (

@@ -1,6 +1,6 @@
 export type FiberCategory = 'NATURAL' | 'SEMISYNTHETIC' | 'SYNTHETIC';
 
-export type TrafficLightColor = 'GREEN' | 'YELLOW' | 'RED';
+export type TrafficLightColor = 'GREEN' | 'YELLOW' | 'RED' | 'UNKNOWN';
 
 export interface ParsedFiberItem {
   id?: string;

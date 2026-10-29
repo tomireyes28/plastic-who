@@ -26,6 +26,7 @@ enum TrafficLightColor {
   GREEN
   YELLOW
   RED
+  UNKNOWN
 }
 
 model Brand {

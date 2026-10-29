@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FiberCategory } from './fiber-dictionary';
 
-export type TrafficLightColor = 'GREEN' | 'YELLOW' | 'RED';
+export type TrafficLightColor = 'GREEN' | 'YELLOW' | 'RED' | 'UNKNOWN';
 
 export interface ParsedFiberItem {
   fiberName: string;
@@ -38,6 +38,16 @@ export class TrafficLightService {
   ): TrafficLightEvaluation {
     const mainFibers = fibers.filter((f) => !f.isLining);
     const liningFibers = fibers.filter((f) => f.isLining);
+
+    if (mainFibers.length === 0) {
+      return {
+        naturalPercentage: 0,
+        semiSyntheticPercentage: 0,
+        syntheticPercentage: 0,
+        trafficLight: 'UNKNOWN',
+        hasSyntheticLining: false,
+      };
+    }
 
     let naturalPercentage = 0;
     let semiSyntheticPercentage = 0;

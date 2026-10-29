@@ -109,7 +109,10 @@ export function CatalogExplorer({
       (p) => p.trafficLight === 'YELLOW',
     ).length;
     const red = filteredProducts.filter((p) => p.trafficLight === 'RED').length;
-    return { total: filteredProducts.length, green, yellow, red };
+    const unknown = filteredProducts.filter(
+      (p) => p.trafficLight === 'UNKNOWN',
+    ).length;
+    return { total: filteredProducts.length, green, yellow, red, unknown };
   }, [filteredProducts]);
 
   return (
@@ -259,6 +262,7 @@ export function CatalogExplorer({
                       { id: 'GREEN', label: '🟢 Verde ≥95%' },
                       { id: 'YELLOW', label: '🟡 Amarillo' },
                       { id: 'RED', label: '🔴 Rojo' },
+                      { id: 'UNKNOWN', label: '⚪ No indica' },
                     ] as const
                   ).map((opt) => (
                     <button

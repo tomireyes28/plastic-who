@@ -146,7 +146,7 @@ export class ScraperService implements OnModuleInit {
         trafficLight: analysis.trafficLight,
         hasSyntheticLining: analysis.hasSyntheticLining,
         inStock: item.inStock,
-        isActive: item.inStock && hasValidComposition,
+        isActive: true, // Guardamos todas las prendas; las que no detallan composición se marcan como 'No indica'
         lastSeenAt: now,
       };
 

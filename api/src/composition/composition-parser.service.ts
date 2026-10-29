@@ -33,17 +33,29 @@ export class CompositionParserService {
 
     if (!rawComposition) {
       return {
-        rawComposition: null,
+        rawComposition: 'No indica',
         fibers: [],
         naturalPercentage: 0,
         semiSyntheticPercentage: 0,
         syntheticPercentage: 0,
-        trafficLight: 'RED',
+        trafficLight: 'UNKNOWN',
         hasSyntheticLining: false,
       };
     }
 
     const fibers = this.extractFibersFromSegment(rawComposition);
+    if (fibers.length === 0) {
+      return {
+        rawComposition: rawComposition || 'No indica',
+        fibers: [],
+        naturalPercentage: 0,
+        semiSyntheticPercentage: 0,
+        syntheticPercentage: 0,
+        trafficLight: 'UNKNOWN',
+        hasSyntheticLining: false,
+      };
+    }
+
     const evaluation = this.trafficLightService.evaluate(fibers, rules);
 
     return {

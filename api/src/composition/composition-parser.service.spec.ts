@@ -87,4 +87,14 @@ describe('CompositionParserService', () => {
     expect(result.syntheticPercentage).toBe(20);
     expect(result.trafficLight).toBe('YELLOW');
   });
+
+  it('debe devolver UNKNOWN y "No indica" cuando el texto no tiene composición técnica', () => {
+    const textWithoutComp =
+      'Top con trabajo de alforzas y puntillas. Calce holgado.';
+    const result = parser.parseFromText(textWithoutComp);
+
+    expect(result.rawComposition).toBe('No indica');
+    expect(result.fibers).toHaveLength(0);
+    expect(result.trafficLight).toBe('UNKNOWN');
+  });
 });
