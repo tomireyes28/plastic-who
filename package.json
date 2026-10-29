@@ -23,6 +23,7 @@
     "scrape:paula": "npm run scrape:paula --workspace=plastic-who-api",
     "scrape:rapsodia": "npm run scrape:rapsodia --workspace=plastic-who-api",
     "scrape:kosiuko": "npm run scrape:kosiuko --workspace=plastic-who-api",
+    "scrape:47": "npm run scrape:47 --workspace=plastic-who-api",
     "scrape:all": "npm run scrape:all --workspace=plastic-who-api"
   }
 }

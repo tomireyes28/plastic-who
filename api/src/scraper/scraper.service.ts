@@ -113,66 +113,72 @@ export class ScraperService implements OnModuleInit {
     let withCompositionCount = 0;
     let withoutCompositionCount = 0;
 
-    for (const item of rawProducts) {
-      const analysis = this.compositionParser.parseFromText(item.description);
+    const writeChunkSize = 6;
+    for (let i = 0; i < rawProducts.length; i += writeChunkSize) {
+      const chunk = rawProducts.slice(i, i + writeChunkSize);
+      await Promise.all(
+        chunk.map(async (item) => {
+          const analysis = this.compositionParser.parseFromText(item.description);
 
-      const hasValidComposition = analysis.fibers.length > 0;
-      if (hasValidComposition) {
-        withCompositionCount++;
-      } else {
-        withoutCompositionCount++;
-      }
+          const hasValidComposition = analysis.fibers.length > 0;
+          if (hasValidComposition) {
+            withCompositionCount++;
+          } else {
+            withoutCompositionCount++;
+          }
 
-      const fiberRows = analysis.fibers.map((f) => ({
-        fiberName: f.fiberName,
-        category: f.category,
-        percentage: f.percentage,
-        isLining: f.isLining,
-      }));
+          const fiberRows = analysis.fibers.map((f) => ({
+            fiberName: f.fiberName,
+            category: f.category,
+            percentage: f.percentage,
+            isLining: f.isLining,
+          }));
 
-      const commonProductData = {
-        name: item.name,
-        slug: item.slug,
-        productUrl: item.productUrl,
-        imageUrl: item.imageUrl,
-        price: item.price,
-        specialPrice: item.specialPrice,
-        category: item.category,
-        description: item.description,
-        rawComposition: analysis.rawComposition,
-        naturalPercentage: analysis.naturalPercentage,
-        semiSyntheticPercentage: analysis.semiSyntheticPercentage,
-        syntheticPercentage: analysis.syntheticPercentage,
-        trafficLight: analysis.trafficLight,
-        hasSyntheticLining: analysis.hasSyntheticLining,
-        inStock: item.inStock,
-        isActive: true, // Guardamos todas las prendas; las que no detallan composición se marcan como 'No indica'
-        lastSeenAt: now,
-      };
+          const commonProductData = {
+            name: item.name,
+            slug: item.slug,
+            productUrl: item.productUrl,
+            imageUrl: item.imageUrl,
+            price: item.price,
+            specialPrice: item.specialPrice,
+            category: item.category,
+            description: item.description,
+            rawComposition: analysis.rawComposition,
+            naturalPercentage: analysis.naturalPercentage,
+            semiSyntheticPercentage: analysis.semiSyntheticPercentage,
+            syntheticPercentage: analysis.syntheticPercentage,
+            trafficLight: analysis.trafficLight,
+            hasSyntheticLining: analysis.hasSyntheticLining,
+            inStock: item.inStock,
+            isActive: true, // Guardamos todas las prendas; las que no detallan composición se marcan como 'No indica'
+            lastSeenAt: now,
+          };
 
-      await this.prisma.product.upsert({
-        where: {
-          brandId_externalId: {
-            brandId: brand.id,
-            externalId: item.externalId,
-          },
-        },
-        update: {
-          ...commonProductData,
-          fibers: {
-            deleteMany: {},
-            create: fiberRows,
-          },
-        },
-        create: {
-          brandId: brand.id,
-          externalId: item.externalId,
-          ...commonProductData,
-          fibers: {
-            create: fiberRows,
-          },
-        },
-      });
+          await this.prisma.product.upsert({
+            where: {
+              brandId_externalId: {
+                brandId: brand.id,
+                externalId: item.externalId,
+              },
+            },
+            update: {
+              ...commonProductData,
+              fibers: {
+                deleteMany: {},
+                create: fiberRows,
+              },
+            },
+            create: {
+              brandId: brand.id,
+              externalId: item.externalId,
+              ...commonProductData,
+              fibers: {
+                create: fiberRows,
+              },
+            },
+          });
+        }),
+      );
     }
 
     await this.prisma.brand.update({

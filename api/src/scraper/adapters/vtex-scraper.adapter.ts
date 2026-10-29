@@ -35,12 +35,12 @@ export class VtexScraperAdapter implements StoreScraperAdapter {
   }
 
   async scrapeCatalog(options?: ScrapeOptions): Promise<ScrapedProductRaw[]> {
-    const maxProducts = options?.maxProducts ?? 35;
+    const maxProducts = options?.maxProducts ?? 1000;
     const results: ScrapedProductRaw[] = [];
     const seenNames = new Set<string>();
 
     const pageSize = 45;
-    for (let from = 0; from < 135 && results.length < maxProducts; from += pageSize) {
+    for (let from = 0; from < 2500 && results.length < maxProducts; from += pageSize) {
       const to = from + pageSize - 1;
       const url = `${this.brandMetadata.websiteUrl}/api/catalog_system/pub/products/search?_from=${from}&_to=${to}`;
 
@@ -160,7 +160,7 @@ export class VtexScraperAdapter implements StoreScraperAdapter {
     productName: string,
   ): boolean {
     const text = `${category ?? ''} ${productName}`.toLowerCase();
-    return /\b(gift\s*box|gift\s*card|bolsa|collar|aros|perfume|fragancia|calzado|zapato|bota|sandalia|cartera|cinturon|cinturón|anteojos|gafas)\b/.test(
+    return /\b(gift\s*box|gift\s*card|bolsa|collar|aros|perfume|fragancia|calzado|zapato|bota|sandalia|chancla|ojota|zapatilla|zueco|cartera|bolso|billetera|mochila|llavero|paraguas|cinturon|cinturón|anteojos|gafas)\b/.test(
       text,
     );
   }

@@ -6,6 +6,36 @@ import {
   StoreScraperAdapter,
 } from '../interfaces/store-scraper-adapter.interface';
 
+const NON_CLOTHING_KEYWORDS = [
+  'bota',
+  'zapatilla',
+  'zueco',
+  'sandalia',
+  'zapato',
+  'bolso',
+  'cartera',
+  'billetera',
+  'neceser',
+  'mochila',
+  'anteojo',
+  'armazon',
+  'perfume',
+  'fragancia',
+  'vela',
+  'llavero',
+  'aro',
+  'collar',
+  'pulsera',
+  'anillo',
+  'cinto',
+  'cinturon',
+  'sombrero',
+  'gorra',
+  'panuelo',
+  'hebilla',
+  'vincha',
+];
+
 interface PowNextItemPayload {
   id: number | string;
   title: string;
@@ -35,85 +65,86 @@ export class WanamaScraperAdapter implements StoreScraperAdapter {
     isKnownBrand: true,
   };
 
-  /** Categorías principales de indumentaria para descubrir prendas activas */
-  private readonly seedCategoryPaths: string[] = [
-    '/categorias/camisas-ss27',
-    '/categorias/remeras-ss27',
-    '/categorias/denim-ss27',
-    '/categorias/vestidos-monos-ss27',
-    '/categorias/sweater-ss27',
-    '/categorias/pantalones-ss27',
-    '/categorias/coleccion-ss-27',
-  ];
-
-  /** Prendas semilla garantizadas por si cambia el nombre de una colección */
-  private readonly fallbackProductPaths: string[] = [
-    '/productos/113-3367_-_camisa_new_margarite',
-    '/productos/110-3313_-_remera_berthie_pima_ii',
-  ];
+  private readonly sitemapUrl = 'https://www.wanama.com/sitemap_productos.xml';
 
   async scrapeCatalog(options?: ScrapeOptions): Promise<ScrapedProductRaw[]> {
-    const maxProducts = options?.maxProducts ?? 20;
-    const productPaths = await this.discoverProductPaths(maxProducts);
+    const maxProducts = options?.maxProducts ?? 500;
+    const productUrls = await this.discoverProductUrls(maxProducts);
 
     this.logger.log(
-      `Wanama: se descubrieron ${productPaths.length} links de productos (límite: ${maxProducts})`,
+      `Wanama: se descubrieron ${productUrls.length} prendas candidatas (límite: ${maxProducts})`,
     );
 
+    const targetUrls = productUrls.slice(0, maxProducts);
     const results: ScrapedProductRaw[] = [];
 
-    for (const path of productPaths.slice(0, maxProducts)) {
-      const url = `${this.brandMetadata.websiteUrl}${path}`;
-      try {
-        const html = await this.fetchHtml(url);
-        const slug = path.replace('/productos/', '');
-        const parsed = this.parseProductFromHtml(html, slug);
-
-        if (parsed && !this.isAccessoryCategory(parsed.category, parsed.name)) {
-          results.push(parsed);
+    // Descarga tranquila y controlada (concurrency = 2 con jitter delay para no despertar Cloudflare/WAF)
+    const chunkSize = 2;
+    for (let i = 0; i < targetUrls.length; i += chunkSize) {
+      const chunk = targetUrls.slice(i, i + chunkSize);
+      const chunkPromises = chunk.map(async (url) => {
+        try {
+          const html = await this.fetchHtml(url);
+          const slug = url.split('/productos/')[1] || url;
+          const parsed = this.parseProductFromHtml(html, slug);
+          if (parsed && !this.isAccessoryCategory(parsed.category, parsed.name)) {
+            return parsed;
+          }
+        } catch (error) {
+          this.logger.warn(`Error al extraer ${url}: ${(error as Error).message}`);
         }
-      } catch (error) {
-        this.logger.warn(
-          `No se pudo extraer el producto ${url}: ${(error as Error).message}`,
-        );
+        return null;
+      });
+
+      const chunkResults = await Promise.all(chunkPromises);
+      for (const item of chunkResults) {
+        if (item) results.push(item);
+      }
+
+      if (i + chunkSize < targetUrls.length) {
+        const delay = 250 + Math.floor(Math.random() * 200);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
+    this.logger.log(
+      `Scraping de Wanama finalizado: ${results.length} prendas procesadas`,
+    );
     return results;
   }
 
-  /**
-   * Descubre URLs de productos (`/productos/...`) recorriendo las páginas de categorías.
-   */
-  async discoverProductPaths(limit: number): Promise<string[]> {
-    const discovered = new Set<string>(this.fallbackProductPaths);
+  async discoverProductUrls(limit: number): Promise<string[]> {
+    try {
+      const res = await fetch(this.sitemapUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          Accept: 'application/xml, text/xml, */*',
+        },
+      });
 
-    for (const catPath of this.seedCategoryPaths) {
-      if (discovered.size >= limit) break;
-      try {
-        const html = await this.fetchHtml(
-          `${this.brandMetadata.websiteUrl}${catPath}`,
-        );
-        for (const prodPath of this.extractProductLinksFromHtml(html)) {
-          discovered.add(prodPath);
-          if (discovered.size >= limit) break;
-        }
-      } catch (error) {
-        this.logger.warn(
-          `No se pudo leer la categoría ${catPath}: ${(error as Error).message}`,
-        );
+      if (!res.ok) {
+        throw new Error(`Sitemap HTTP ${res.status}`);
       }
+
+      const text = await res.text();
+      const allUrls = [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+
+      return allUrls
+        .filter((url) => {
+          const lower = url.toLowerCase();
+          return !NON_CLOTHING_KEYWORDS.some((kw) => lower.includes(kw));
+        })
+        .slice(0, limit);
+    } catch (error) {
+      this.logger.warn(
+        `Error leyendo sitemap de Wanama: ${(error as Error).message}. Usando fallback.`,
+      );
+      return [
+        'https://www.wanama.com/productos/113-3367_-_camisa_new_margarite',
+        'https://www.wanama.com/productos/110-3313_-_remera_berthie_pima_ii',
+      ];
     }
-
-    return Array.from(discovered);
-  }
-
-  /**
-   * Extrae todas las rutas `/productos/<slug>` presentes en un documento HTML.
-   */
-  extractProductLinksFromHtml(html: string): string[] {
-    const matches = html.match(/\/productos\/[a-zA-Z0-9_-]+/g) || [];
-    return Array.from(new Set(matches));
   }
 
   /**
@@ -135,7 +166,22 @@ export class WanamaScraperAdapter implements StoreScraperAdapter {
         ? item.variant.non_formatted_special_price
         : null;
 
-    const description = [item.description, item.brief_description]
+    const panelMatch = html.match(
+      /id=["']panel-composicion["'][^>]*>([\s\S]*?)<\/div>/i,
+    );
+    let panelText: string | null = null;
+    if (panelMatch) {
+      panelText = panelMatch[1]
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    const description = [
+      panelText ? `Composición: ${panelText}` : null,
+      item.description,
+      item.brief_description,
+    ]
       .filter(Boolean)
       .join('\n');
 
@@ -243,13 +289,20 @@ export class WanamaScraperAdapter implements StoreScraperAdapter {
   }
 
   private async fetchHtml(url: string): Promise<string> {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml',
-      },
-    });
+    const headers = {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      Accept: 'text/html,application/xhtml+xml',
+      'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
+    };
+
+    let response = await fetch(url, { headers });
+
+    if (response.status === 429 || response.status === 503) {
+      this.logger.warn(`Pausa por rate-limit (${response.status}) en ${url}...`);
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      response = await fetch(url, { headers });
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} al consultar ${url}`);

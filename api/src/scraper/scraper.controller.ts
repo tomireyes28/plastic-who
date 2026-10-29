@@ -10,7 +10,7 @@ export class ScraperController {
     const parsedLimit = limit ? parseInt(limit, 10) : 30;
     const maxProducts =
       Number.isFinite(parsedLimit) && parsedLimit > 0
-        ? Math.min(parsedLimit, 100)
+        ? Math.min(parsedLimit, 1000)
         : 30;
 
     return this.scraperService.scrapeAllBrands({ maxProducts });
@@ -24,7 +24,7 @@ export class ScraperController {
     const parsedLimit = limit ? parseInt(limit, 10) : 30;
     const maxProducts =
       Number.isFinite(parsedLimit) && parsedLimit > 0
-        ? Math.min(parsedLimit, 100)
+        ? Math.min(parsedLimit, 1000)
         : 30;
 
     return this.scraperService.scrapeBrandBySlug(brandSlug, { maxProducts });

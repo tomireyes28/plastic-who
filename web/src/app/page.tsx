@@ -91,7 +91,7 @@ export default async function HomePage() {
   try {
     const [fetchedBrands, fetchedProducts] = await Promise.all([
       fetchBrands(),
-      fetchProducts({ limit: 120 } as never),
+      fetchProducts({ limit: 5000 }),
     ]);
     if (fetchedBrands.length > 0) {
       brands = fetchedBrands;

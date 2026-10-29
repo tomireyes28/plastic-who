@@ -8,8 +8,17 @@ import {
 
 const SEED_CATEGORIES = [
   'https://www.kosiuko.com/destacados/new-in.html',
+  'https://www.kosiuko.com/coleccion/camisas-y-blusas.html',
+  'https://www.kosiuko.com/coleccion/bodies-y-tops.html',
+  'https://www.kosiuko.com/coleccion/remeras.html',
+  'https://www.kosiuko.com/coleccion/vestidos-y-monos.html',
+  'https://www.kosiuko.com/coleccion/faldas-y-shorts.html',
+  'https://www.kosiuko.com/coleccion/pantalones.html',
   'https://www.kosiuko.com/coleccion/abrigos.html',
   'https://www.kosiuko.com/coleccion/blazers-y-chalecos.html',
+  'https://www.kosiuko.com/coleccion/tejidos.html',
+  'https://www.kosiuko.com/denim/jeans.html',
+  'https://www.kosiuko.com/denim/camperas.html',
   'https://www.kosiuko.com/destacados/sale.html',
 ];
 
@@ -58,7 +67,7 @@ export class KosiukoScraperAdapter implements StoreScraperAdapter {
   };
 
   async scrapeCatalog(options?: ScrapeOptions): Promise<ScrapedProductRaw[]> {
-    const maxProducts = options?.maxProducts ?? 30;
+    const maxProducts = options?.maxProducts ?? 200;
     this.logger.log(
       `Iniciando scraping de Kosiuko (límite: ${maxProducts} prendas)...`,
     );
@@ -71,8 +80,8 @@ export class KosiukoScraperAdapter implements StoreScraperAdapter {
     const targetUrls = clothingUrls.slice(0, maxProducts);
     const results: ScrapedProductRaw[] = [];
 
-    // Descarga concurrente controlada (concurrency = 4)
-    const chunkSize = 4;
+    // Descarga tranquila y controlada (concurrency = 2 con jitter delay para no despertar Cloudflare/WAF)
+    const chunkSize = 2;
     for (let i = 0; i < targetUrls.length; i += chunkSize) {
       const chunk = targetUrls.slice(i, i + chunkSize);
       const chunkPromises = chunk.map((url) => this.fetchProductDetail(url));
@@ -82,6 +91,11 @@ export class KosiukoScraperAdapter implements StoreScraperAdapter {
         if (item) {
           results.push(item);
         }
+      }
+
+      if (i + chunkSize < targetUrls.length) {
+        const delay = 250 + Math.floor(Math.random() * 200);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
@@ -95,31 +109,35 @@ export class KosiukoScraperAdapter implements StoreScraperAdapter {
     const collected = new Set<string>();
 
     for (const catUrl of SEED_CATEGORIES) {
-      try {
-        const res = await fetch(catUrl, {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          },
-        });
+      const pageUrls = [catUrl, `${catUrl}?p=2`];
+      for (const pUrl of pageUrls) {
+        try {
+          const res = await fetch(pUrl, {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+              Accept: 'text/html,application/xhtml+xml',
+            },
+          });
 
-        if (!res.ok) continue;
+          if (!res.ok) continue;
 
-        const html = await res.text();
-        const links = [
-          ...html.matchAll(/class="product-item-link"\s+href="([^"]+)"/g),
-        ].map((m) => m[1]);
+          const html = await res.text();
+          const links = [
+            ...html.matchAll(/class="product-item-link"\s+href="([^"]+)"/g),
+          ].map((m) => m[1]);
 
-        for (const link of links) {
-          const lower = link.toLowerCase();
-          if (!NON_CLOTHING_KEYWORDS.some((kw) => lower.includes(kw))) {
-            collected.add(link);
+          for (const link of links) {
+            const lower = link.toLowerCase();
+            if (!NON_CLOTHING_KEYWORDS.some((kw) => lower.includes(kw))) {
+              collected.add(link);
+            }
           }
+        } catch (error) {
+          this.logger.warn(
+            `Error obteniendo categoría de Kosiuko (${pUrl}): ${(error as Error).message}`,
+          );
         }
-      } catch (error) {
-        this.logger.warn(
-          `Error obteniendo categoría de Kosiuko (${catUrl}): ${(error as Error).message}`,
-        );
       }
     }
 
@@ -128,13 +146,20 @@ export class KosiukoScraperAdapter implements StoreScraperAdapter {
 
   async fetchProductDetail(url: string): Promise<ScrapedProductRaw | null> {
     try {
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          Accept: 'text/html,application/xhtml+xml',
-        },
-      });
+      const headers = {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
+      };
+
+      let res = await fetch(url, { headers });
+
+      if (res.status === 429 || res.status === 503) {
+        this.logger.warn(`Pausa por rate-limit (${res.status}) en ${url}...`);
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        res = await fetch(url, { headers });
+      }
 
       if (!res.ok) {
         this.logger.warn(`Error ${res.status} al obtener ${url}`);

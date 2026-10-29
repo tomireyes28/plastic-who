@@ -36,6 +36,7 @@ export function CatalogExplorer({
   );
   const [selectedCategory, setSelectedCategory] = useState<string>('TODAS');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [visibleCount, setVisibleCount] = useState<number>(36);
 
   // Categorías únicas presentes en las prendas cargadas
   const categories = useMemo(() => {
@@ -99,6 +100,11 @@ export function CatalogExplorer({
     selectedCategory,
     searchQuery,
   ]);
+
+  // Listado recortado para renderizado fluido en el DOM
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount);
+  }, [filteredProducts, visibleCount]);
 
   // Resumen estadístico de la vista actual
   const stats = useMemo(() => {
@@ -193,7 +199,10 @@ export function CatalogExplorer({
                 <div className="mt-2.5 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setSelectedBrand('ALL')}
+                    onClick={() => {
+                      setSelectedBrand('ALL');
+                      setVisibleCount(36);
+                    }}
                     className={`font-label cursor-pointer border px-3.5 py-2 text-xs font-bold uppercase transition-all ${
                       selectedBrand === 'ALL'
                         ? 'border-[#191c18] bg-[#191c18] text-[#f3efe6]'
@@ -208,7 +217,10 @@ export function CatalogExplorer({
                       <button
                         key={b.id}
                         type="button"
-                        onClick={() => setSelectedBrand(b.slug)}
+                        onClick={() => {
+                          setSelectedBrand(b.slug);
+                          setVisibleCount(36);
+                        }}
                         className={`font-label cursor-pointer border px-3.5 py-2 text-xs font-bold uppercase transition-all ${
                           active
                             ? 'border-[#191c18] bg-[#191c18] text-[#f3efe6]'
@@ -234,7 +246,10 @@ export function CatalogExplorer({
                       <button
                         key={mat.key}
                         type="button"
-                        onClick={() => setSelectedMaterial(mat.key)}
+                        onClick={() => {
+                          setSelectedMaterial(mat.key);
+                          setVisibleCount(36);
+                        }}
                         className={`font-label cursor-pointer border px-3.5 py-2 text-xs font-bold uppercase transition-all ${
                           active
                             ? 'border-[#2b593f] bg-[#2b593f] text-[#f3efe6]'
@@ -268,7 +283,10 @@ export function CatalogExplorer({
                     <button
                       key={opt.id}
                       type="button"
-                      onClick={() => setSelectedLight(opt.id)}
+                      onClick={() => {
+                        setSelectedLight(opt.id);
+                        setVisibleCount(36);
+                      }}
                       className={`font-label cursor-pointer border px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
                         selectedLight === opt.id
                           ? 'border-[#191c18] bg-[#191c18] text-[#f3efe6]'
@@ -292,7 +310,10 @@ export function CatalogExplorer({
                   <select
                     id="category-select"
                     value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setVisibleCount(36);
+                    }}
                     className="font-label mt-1.5 w-full border border-[#cfc6b4] bg-[#f3efe6] px-2.5 py-1.5 text-xs text-[#191c18] focus:border-[#191c18] focus:outline-none"
                   >
                     {categories.map((cat) => (
@@ -314,7 +335,10 @@ export function CatalogExplorer({
                     id="search-input"
                     type="search"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setVisibleCount(36);
+                    }}
                     placeholder="Ej: camisa, ramié..."
                     className="font-label mt-1.5 w-full border border-[#cfc6b4] bg-[#f3efe6] px-2.5 py-1.5 text-xs text-[#191c18] placeholder:text-[#8c887e] focus:border-[#191c18] focus:outline-none"
                   />
@@ -342,9 +366,27 @@ export function CatalogExplorer({
           {/* Listado de Fichas */}
           <section className="mt-4 space-y-4">
             {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <GarmentCard key={product.id} product={product} />
-              ))
+              <>
+                <div className="font-label flex items-center justify-between text-xs text-[#5a5d55]">
+                  <span>
+                    Mostrando {displayedProducts.length} de {filteredProducts.length} prendas
+                  </span>
+                </div>
+                {displayedProducts.map((product) => (
+                  <GarmentCard key={product.id} product={product} />
+                ))}
+                {visibleCount < filteredProducts.length && (
+                  <div className="pt-4 pb-8 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((prev) => prev + 36)}
+                      className="font-label cursor-pointer border border-[#191c18] bg-[#191c18] px-6 py-3 text-xs font-bold tracking-wider text-[#f3efe6] uppercase transition-colors hover:bg-[#333]"
+                    >
+                      Cargar más prendas ({filteredProducts.length - visibleCount} restantes)
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="garment-tag-border bg-[#fbf9f5] p-8 text-center">
                 <p className="font-editorial text-lg font-semibold text-[#191c18]">
@@ -360,6 +402,7 @@ export function CatalogExplorer({
                     setSelectedLight('ALL');
                     setSelectedCategory('TODAS');
                     setSearchQuery('');
+                    setVisibleCount(36);
                   }}
                   className="font-label mt-4 cursor-pointer bg-[#191c18] px-4 py-2 text-xs font-bold tracking-wider text-[#f3efe6] uppercase"
                 >

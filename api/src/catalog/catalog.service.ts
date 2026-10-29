@@ -103,7 +103,7 @@ export class CatalogService {
     }
 
     const limit =
-      query.limit && query.limit > 0 ? Math.min(query.limit, 200) : 60;
+      query.limit && query.limit > 0 ? Math.min(query.limit, 5000) : 5000;
 
     return this.prisma.product.findMany({
       where,

@@ -64,7 +64,7 @@ export async function fetchBrands(): Promise<BrandSummary[]> {
 export async function fetchProducts(
   filters: ProductFilters = {},
 ): Promise<ProductCardItem[]> {
-  const limit = filters.limit ?? 150;
+  const limit = filters.limit ?? 5000;
 
   if (process.env.DATABASE_URL) {
     const rows = await prisma.product.findMany({

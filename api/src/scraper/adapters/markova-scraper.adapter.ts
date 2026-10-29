@@ -6,6 +6,37 @@ import {
   StoreScraperAdapter,
 } from '../interfaces/store-scraper-adapter.interface';
 
+const NON_CLOTHING_KEYWORDS = [
+  'bota',
+  'zapatilla',
+  'zueco',
+  'sandalia',
+  'zapato',
+  'stiletto',
+  'bolso',
+  'cartera',
+  'billetera',
+  'mochila',
+  'anteojo',
+  'armazon',
+  'perfume',
+  'fragancia',
+  'vela',
+  'llavero',
+  'aro',
+  'collar',
+  'pulsera',
+  'anillo',
+  'cinto',
+  'cinturon',
+  'cinturón',
+  'sombrero',
+  'gorra',
+  'panuelo',
+  'hebilla',
+  'vincha',
+];
+
 interface SchemaOrgProduct {
   '@type'?: string;
   name?: string;
@@ -14,6 +45,7 @@ interface SchemaOrgProduct {
   offers?: {
     url?: string;
     price?: string | number;
+    availability?: string;
   };
 }
 
@@ -29,62 +61,45 @@ export class MarkovaScraperAdapter implements StoreScraperAdapter {
     isKnownBrand: true,
   };
 
-  /** Prendas iniciales de la temporada activa desde donde el crawler descubre el resto */
-  private readonly seedProductSlugs: string[] = [
-    'g456_-_vestido-durbuy',
-    'g539_-_blusa-toulouse',
-    'g453_-_vestido-kolding',
-    'g313_-_blazer-toulouse',
-    'g200_-_pollera-taipei',
-    'g312_-_blazer-corvus',
-    'g816_-_top-galle',
-    'g413_-_mono-hamburgo',
-  ];
+  private readonly sitemapUrl = 'https://markova.com/sitemap_productos.xml';
 
   async scrapeCatalog(options?: ScrapeOptions): Promise<ScrapedProductRaw[]> {
-    const maxProducts = options?.maxProducts ?? 25;
-    const queue: string[] = [...this.seedProductSlugs];
-    const visited = new Set<string>();
+    const maxProducts = options?.maxProducts ?? 500;
+    const productUrls = await this.discoverProductUrls(maxProducts);
+
+    this.logger.log(
+      `Markova: se descubrieron ${productUrls.length} prendas candidatas (límite: ${maxProducts})`,
+    );
+
+    const targetUrls = productUrls.slice(0, maxProducts);
     const results: ScrapedProductRaw[] = [];
 
-    // Sembrar también desde la portada de Markova
-    try {
-      const homeHtml = await this.fetchHtml(this.brandMetadata.websiteUrl);
-      for (const slug of this.extractProductSlugsFromHtml(homeHtml)) {
-        if (!queue.includes(slug)) {
-          queue.push(slug);
-        }
-      }
-    } catch (error) {
-      this.logger.warn(
-        `No se pudo leer la portada de Markova: ${(error as Error).message}`,
-      );
-    }
-
-    while (queue.length > 0 && results.length < maxProducts) {
-      const slug = queue.shift()!;
-      if (visited.has(slug)) continue;
-      visited.add(slug);
-
-      const url = `${this.brandMetadata.websiteUrl}/productos/${slug}`;
-      try {
-        const html = await this.fetchHtml(url);
-
-        // Descubrir nuevas prendas relacionadas ("Completá el look") dentro de la ficha
-        for (const relatedSlug of this.extractProductSlugsFromHtml(html)) {
-          if (!visited.has(relatedSlug) && !queue.includes(relatedSlug)) {
-            queue.push(relatedSlug);
+    // Descarga tranquila y controlada (concurrency = 2 con jitter delay para no despertar Cloudflare/WAF)
+    const chunkSize = 2;
+    for (let i = 0; i < targetUrls.length; i += chunkSize) {
+      const chunk = targetUrls.slice(i, i + chunkSize);
+      const chunkPromises = chunk.map(async (url) => {
+        try {
+          const html = await this.fetchHtml(url);
+          const slug = url.split('/productos/')[1] || url;
+          const parsed = this.parseProductFromHtml(html, slug);
+          if (parsed && !this.isNonClothingItem(parsed.name)) {
+            return parsed;
           }
+        } catch (error) {
+          this.logger.warn(`Error al extraer ${url}: ${(error as Error).message}`);
         }
+        return null;
+      });
 
-        const parsed = this.parseProductFromHtml(html, slug);
-        if (parsed && !this.isNonClothingItem(parsed.name)) {
-          results.push(parsed);
-        }
-      } catch (error) {
-        this.logger.warn(
-          `No se pudo procesar ${url}: ${(error as Error).message}`,
-        );
+      const chunkResults = await Promise.all(chunkPromises);
+      for (const item of chunkResults) {
+        if (item) results.push(item);
+      }
+
+      if (i + chunkSize < targetUrls.length) {
+        const delay = 250 + Math.floor(Math.random() * 200);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
@@ -92,13 +107,38 @@ export class MarkovaScraperAdapter implements StoreScraperAdapter {
     return results;
   }
 
-  extractProductSlugsFromHtml(html: string): string[] {
-    const matches = [
-      ...html.matchAll(
-        /href=["'](?:https?:\/\/(?:www\.)?markova\.com)?\/?productos\/([^"'?#\s]+)/g,
-      ),
-    ].map((m) => m[1]);
-    return Array.from(new Set(matches));
+  async discoverProductUrls(limit: number): Promise<string[]> {
+    try {
+      const res = await fetch(this.sitemapUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          Accept: 'application/xml, text/xml, */*',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Sitemap HTTP ${res.status}`);
+      }
+
+      const text = await res.text();
+      const allUrls = [...text.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+
+      return allUrls
+        .filter((url) => {
+          const lower = url.toLowerCase();
+          return !NON_CLOTHING_KEYWORDS.some((kw) => lower.includes(kw));
+        })
+        .slice(0, limit);
+    } catch (error) {
+      this.logger.warn(
+        `Error leyendo sitemap de Markova: ${(error as Error).message}. Usando fallback.`,
+      );
+      return [
+        'https://markova.com/productos/g456_-_vestido-durbuy',
+        'https://markova.com/productos/g539_-_blusa-toulouse',
+      ];
+    }
   }
 
   parseProductFromHtml(
@@ -130,6 +170,12 @@ export class MarkovaScraperAdapter implements StoreScraperAdapter {
 
     const name = this.formatTitleCase(schemaProduct.name.trim());
 
+    const isOutOfStock =
+      schemaProduct.offers?.availability?.includes('OutOfStock') ||
+      html.includes('class="out-of-stock"') ||
+      html.includes('>Sin stock<') ||
+      html.includes('>Agotado<');
+
     return {
       externalId: slug,
       name,
@@ -140,7 +186,7 @@ export class MarkovaScraperAdapter implements StoreScraperAdapter {
       specialPrice: null,
       category: this.inferCategoryFromName(name),
       description,
-      inStock: true,
+      inStock: !isOutOfStock,
     };
   }
 
@@ -197,13 +243,20 @@ export class MarkovaScraperAdapter implements StoreScraperAdapter {
   }
 
   private async fetchHtml(url: string): Promise<string> {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml',
-      },
-    });
+    const headers = {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      Accept: 'text/html,application/xhtml+xml',
+      'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
+    };
+
+    let response = await fetch(url, { headers });
+
+    if (response.status === 429 || response.status === 503) {
+      this.logger.warn(`Pausa por rate-limit (${response.status}) en ${url}...`);
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      response = await fetch(url, { headers });
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} al consultar ${url}`);

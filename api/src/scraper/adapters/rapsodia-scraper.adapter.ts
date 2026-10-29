@@ -17,6 +17,7 @@ const NON_CLOTHING_KEYWORDS = [
   'billetera',
   'neceser',
   'mochila',
+  'sobre-',
   'anteojo',
   'armazon',
   'perfume',
@@ -32,6 +33,17 @@ const NON_CLOTHING_KEYWORDS = [
   'sombrero',
   'gorra',
   'panuelo',
+  'hebilla',
+  'vincha',
+  'colita',
+  'scrunchie',
+  'pin-',
+  'clip',
+  'porta',
+  'funda',
+  'almohadon',
+  'manta',
+  'cuaderno',
 ];
 
 const CATEGORY_KEYWORDS: Array<{ match: RegExp; name: string }> = [
@@ -66,7 +78,7 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
     'https://www.rapsodia.com.ar/media/sitemap-rapsodia-ar/sitemap.xml';
 
   async scrapeCatalog(options?: ScrapeOptions): Promise<ScrapedProductRaw[]> {
-    const maxProducts = options?.maxProducts ?? 30;
+    const maxProducts = options?.maxProducts ?? 500;
     this.logger.log(
       `Iniciando scraping de Rapsodia (límite: ${maxProducts} prendas)...`,
     );
@@ -79,8 +91,8 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
     const targetUrls = clothingUrls.slice(0, maxProducts);
     const results: ScrapedProductRaw[] = [];
 
-    // Descarga concurrente controlada (concurrency = 4)
-    const chunkSize = 4;
+    // Descarga tranquila y controlada (concurrency = 2 o 3 con jitter delay para no despertar Cloudflare/WAF)
+    const chunkSize = 2;
     for (let i = 0; i < targetUrls.length; i += chunkSize) {
       const chunk = targetUrls.slice(i, i + chunkSize);
       const chunkPromises = chunk.map((url) => this.fetchProductDetail(url));
@@ -90,6 +102,12 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
         if (item) {
           results.push(item);
         }
+      }
+
+      // Pausa aleatoria natural entre batches (250ms - 450ms)
+      if (i + chunkSize < targetUrls.length) {
+        const delay = 250 + Math.floor(Math.random() * 200);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
@@ -104,7 +122,7 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
       const res = await fetch(this.sitemapUrl, {
         headers: {
           'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           Accept: 'application/xml, text/xml, */*',
         },
       });
@@ -122,11 +140,13 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
       const productRegex = /\/\d{4,}[a-z0-9_-]+\.html$/i;
       const candidateUrls = allUrls.filter((u) => productRegex.test(u));
 
-      // Filtrar calzado y accesorios
-      return candidateUrls.filter((url) => {
-        const lower = url.toLowerCase();
-        return !NON_CLOTHING_KEYWORDS.some((kw) => lower.includes(kw));
-      });
+      // Filtrar calzado y accesorios, y ordenar del más reciente al más antiguo
+      return candidateUrls
+        .filter((url) => {
+          const lower = url.toLowerCase();
+          return !NON_CLOTHING_KEYWORDS.some((kw) => lower.includes(kw));
+        })
+        .reverse();
     } catch (error) {
       this.logger.error(
         `Error al leer sitemap de Rapsodia: ${(error as Error).message}`,
@@ -137,13 +157,31 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
 
   async fetchProductDetail(url: string): Promise<ScrapedProductRaw | null> {
     try {
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          Accept: 'text/html,application/xhtml+xml',
-        },
-      });
+      const headers = {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
+        'Sec-Ch-Ua':
+          '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+      };
+
+      let res = await fetch(url, { headers });
+
+      // Si responde 429 o 503, esperar 2.5s y reintentar una vez
+      if (res.status === 429 || res.status === 503) {
+        this.logger.warn(`Pausa por rate-limit (${res.status}) en ${url}...`);
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        res = await fetch(url, { headers });
+      }
 
       if (!res.ok) {
         this.logger.warn(`Error ${res.status} al obtener ${url}`);
@@ -217,6 +255,14 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '') || externalId.toLowerCase();
 
+      // 7. Stock
+      const isOutOfStock =
+        html.includes('class="stock unavailable"') ||
+        html.includes('"is_in_stock":false') ||
+        html.includes('"is_salable":false') ||
+        html.includes('>Agotado<') ||
+        html.includes('>Sin stock<');
+
       return {
         externalId,
         name,
@@ -227,7 +273,7 @@ export class RapsodiaScraperAdapter implements StoreScraperAdapter {
         specialPrice: null,
         category,
         description,
-        inStock: true,
+        inStock: !isOutOfStock,
       };
     } catch (error) {
       this.logger.warn(

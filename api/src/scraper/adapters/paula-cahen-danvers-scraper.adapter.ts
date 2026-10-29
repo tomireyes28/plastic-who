@@ -63,7 +63,7 @@ export class PaulaCahenDanversScraperAdapter implements StoreScraperAdapter {
     'https://www.paulacahendanvers.com.ar/sitemap_productos.xml';
 
   async scrapeCatalog(options?: ScrapeOptions): Promise<ScrapedProductRaw[]> {
-    const maxProducts = options?.maxProducts ?? 30;
+    const maxProducts = options?.maxProducts ?? 1000;
     this.logger.log(
       `Iniciando scraping de Paula Cahen D'Anvers (límite: ${maxProducts} prendas)...`,
     );
@@ -82,8 +82,8 @@ export class PaulaCahenDanversScraperAdapter implements StoreScraperAdapter {
     const targetUrls = clothingUrls.slice(0, maxProducts);
     const results: ScrapedProductRaw[] = [];
 
-    // Descarga concurrente controlada (concurrency = 4)
-    const chunkSize = 4;
+    // Descarga tranquila y controlada (chunkSize = 2 con jitter delay para no despertar Cloudflare/WAF)
+    const chunkSize = 2;
     for (let i = 0; i < targetUrls.length; i += chunkSize) {
       const chunk = targetUrls.slice(i, i + chunkSize);
       const chunkPromises = chunk.map((url) => this.fetchProductDetail(url));
@@ -93,6 +93,12 @@ export class PaulaCahenDanversScraperAdapter implements StoreScraperAdapter {
         if (item) {
           results.push(item);
         }
+      }
+
+      // Pausa aleatoria natural entre batches para respetar Cloudflare
+      if (i + chunkSize < targetUrls.length) {
+        const delay = 300 + Math.floor(Math.random() * 250);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
@@ -128,13 +134,30 @@ export class PaulaCahenDanversScraperAdapter implements StoreScraperAdapter {
 
   async fetchProductDetail(url: string): Promise<ScrapedProductRaw | null> {
     try {
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          Accept: 'text/html,application/xhtml+xml',
-        },
-      });
+      const headers = {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
+        'Sec-Ch-Ua':
+          '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+      };
+
+      let res = await fetch(url, { headers });
+
+      if (res.status === 429 || res.status === 503) {
+        this.logger.warn(`Pausa por rate-limit (${res.status}) en ${url}...`);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        res = await fetch(url, { headers });
+      }
 
       if (!res.ok) {
         this.logger.warn(`Error ${res.status} al obtener ${url}`);

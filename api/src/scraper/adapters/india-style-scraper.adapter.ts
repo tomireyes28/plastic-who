@@ -37,7 +37,7 @@ export class IndiaStyleScraperAdapter implements StoreScraperAdapter {
   private readonly sitemapUrl = 'https://indiastyle.com.ar/sitemap.xml';
 
   async scrapeCatalog(options?: ScrapeOptions): Promise<ScrapedProductRaw[]> {
-    const maxProducts = options?.maxProducts ?? 30;
+    const maxProducts = options?.maxProducts ?? 300;
     this.logger.log(
       `Iniciando scraping de India Style (límite: ${maxProducts} prendas)...`,
     );
@@ -50,8 +50,8 @@ export class IndiaStyleScraperAdapter implements StoreScraperAdapter {
     const targetUrls = productUrls.slice(0, maxProducts);
     const results: ScrapedProductRaw[] = [];
 
-    // Descarga concurrente controlada (concurrency = 4 para cuidar la tienda)
-    const chunkSize = 4;
+    // Descarga tranquila y controlada (concurrency = 2 con jitter delay para no despertar Cloudflare/WAF)
+    const chunkSize = 2;
     for (let i = 0; i < targetUrls.length; i += chunkSize) {
       const chunk = targetUrls.slice(i, i + chunkSize);
       const chunkPromises = chunk.map((url) => this.fetchProductDetail(url));
@@ -61,6 +61,11 @@ export class IndiaStyleScraperAdapter implements StoreScraperAdapter {
         if (item) {
           results.push(item);
         }
+      }
+
+      if (i + chunkSize < targetUrls.length) {
+        const delay = 250 + Math.floor(Math.random() * 200);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
@@ -78,7 +83,7 @@ export class IndiaStyleScraperAdapter implements StoreScraperAdapter {
       const response = await fetch(this.sitemapUrl, {
         headers: {
           'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           Accept: 'application/xml, text/xml, */*',
         },
       });
@@ -110,13 +115,20 @@ export class IndiaStyleScraperAdapter implements StoreScraperAdapter {
    */
   async fetchProductDetail(url: string): Promise<ScrapedProductRaw | null> {
     try {
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          Accept: 'text/html,application/xhtml+xml',
-        },
-      });
+      const headers = {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
+      };
+
+      let response = await fetch(url, { headers });
+
+      if (response.status === 429 || response.status === 503) {
+        this.logger.warn(`Pausa por rate-limit (${response.status}) en ${url}...`);
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        response = await fetch(url, { headers });
+      }
 
       if (!response.ok) {
         this.logger.warn(`Error ${response.status} al obtener ${url}`);
