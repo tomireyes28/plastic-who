@@ -7,20 +7,26 @@ describe('WanamaScraperAdapter', () => {
     adapter = new WanamaScraperAdapter();
   });
 
-  it('debe extraer links únicos de productos desde el HTML de una categoría', () => {
-    const sampleCategoryHtml = `
-      <div>
-        <a href="/productos/113-3367_-_camisa_new_margarite">Camisa</a>
-        <a href="/productos/110-3313_-_remera_berthie_pima_ii">Remera</a>
-        <a href="/productos/113-3367_-_camisa_new_margarite">Duplicado</a>
-      </div>
+  it('debe descubrir URLs de productos filtrando palabras clave de accesorios', async () => {
+    const mockSitemapXml = `
+      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <url><loc>https://www.wanama.com/productos/113-3367_-_camisa_new_margarite</loc></url>
+        <url><loc>https://www.wanama.com/productos/110-3313_-_remera_berthie_pima_ii</loc></url>
+        <url><loc>https://www.wanama.com/productos/110-3313_-_cartera_cuero</loc></url>
+      </urlset>
     `;
 
-    const links = adapter.extractProductLinksFromHtml(sampleCategoryHtml);
+    jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => mockSitemapXml,
+    } as unknown as Response);
 
-    expect(links).toEqual([
-      '/productos/113-3367_-_camisa_new_margarite',
-      '/productos/110-3313_-_remera_berthie_pima_ii',
+    const urls = await adapter.discoverProductUrls(10);
+
+    expect(urls).toEqual([
+      'https://www.wanama.com/productos/113-3367_-_camisa_new_margarite',
+      'https://www.wanama.com/productos/110-3313_-_remera_berthie_pima_ii',
     ]);
   });
 
