@@ -41,6 +41,10 @@ const FIBER_ALIASES = [...new Set(FIBER_DICTIONARY.flatMap(def => def.synonyms.m
   .map(alias => alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 const FIBER_TOKEN_PATTERN = `(?<![a-z0-9])(?:${FIBER_ALIASES.join('|')})(?![a-z0-9])`;
 
+function isConstructionDeclaration(text: string): boolean {
+  return /\bconfeccionad[oa]\s+en\b/i.test(text) && /\d+(?:[.,]\d+)?\s*%/.test(text);
+}
+
 function cleanSource(rawText: string): string {
   const entities: Record<string, string> = {
     aacute: 'á', eacute: 'é', iacute: 'í', oacute: 'ó', uacute: 'ú',
@@ -124,7 +128,7 @@ export class CompositionParserService {
       const fiberThenAmount = fiberAtStart && /^\s+[+\-−]?\d+(?:[.,]\d+)?\s*%/.test(normalized.slice(fiberAtStart[0].length));
       // Retain unsupported technical labels so they cannot silently produce a false green.
       const unknownSection = /^[\p{L}\p{N} ]{1,40}\s*:/u.test(candidate) && percentage.test(candidate);
-      if (candidate && (selected.length === 0 || declaration || startsAmount || fiberThenAmount || unknownSection || isFiberList(candidate))) {
+      if (candidate && (selected.length === 0 || declaration || startsAmount || fiberThenAmount || unknownSection || isFiberList(candidate) || isConstructionDeclaration(candidate))) {
         selected.push(candidate);
       }
       if (stop) break;
@@ -166,7 +170,17 @@ export class CompositionParserService {
     }
     // An explicitly empty section is incomplete, not evidence of an absent lining.
     sections.push({ type, text: segment.slice(lastIndex).trim() });
-    return sections;
+    // Independent prose declarations may repeat the collection statement. Keep them
+    // separate for the existing equivalence/contradiction checks, not as a 200% blend.
+    return sections.flatMap(section => {
+      if (section.type !== 'MAIN') return [section];
+      const chunks: string[] = [];
+      for (const line of section.text.split('\n')) {
+        if (chunks.length === 0 || isConstructionDeclaration(line)) chunks.push(line);
+        else chunks[chunks.length - 1] += '\n' + line;
+      }
+      return chunks.map(text => ({ type: section.type, text }));
+    });
   }
 
   private parseGroup(sections: Section[], isLining: boolean): SectionResult {
@@ -288,6 +302,16 @@ export class CompositionParserService {
       // Never consume arbitrary text following the clause or any fiber/percentage token.
       residue = residue.replace(/,\s*(?:de la mejor calidad, muy suave y extra comodo|muy suave y extra comodo|super suave y extra confortable|super livianito, fresco y extra comodo|extra suave y suuuuuuper liviano para los dias calurosos de verano|extra suave y suuuuuuper livianito para los dias calurosos de verano|esta remera es perfecta para disfrutar de los dias de calor sin perder el estilo|esta remera es suave, fresca y, sobre todo, comoda|lo que la hace super fresca y liviana|garantizando una suavidad excepcional y un look tierno que hara que tu pequena luzca encantadora en cualquier ocasion)(?=\s*(?:[.!]|$))/g, '. ');
       residue = residue.replace(/,\s*(?:especial para jugar los dias de verano|sera tu aliado a la hora de vestir a tu bebe y mantenerlo abrigadito|sino tambien para jugar en casa de la manera mas comoda|por lo que es requete comodo para jugar libremente)(?=\s*(?:[.!]|$))/g, '. ');
+      // Literal commercial wording checked in Reír's product body. Only punctuation
+      // or complete clauses are removed; fiber and amount tokens remain validated.
+      residue = residue.replace(/^((?:the\s+(?:denim|black)\s+collection\s*!\s*)?nuestros clasicos mas elegidos),\s*(?=en (?:denim|gabardina(?: vintage)?)\b)/, '$1. ');
+      residue = residue.replace(/con un corte baby tee, ajustado y corto, rinde homenaje al estilo noventoso que tanto amamos\./g, ' ');
+      residue = residue.replace(/,\s*(?:con una estampa llena de color y vida|su caida es espectacular y super sentadora|el recorte central es super sentador|lo que garantiza comodidad y frescura durante todo el dia)(?=\s*(?:[.!]|$))/g, '. ');
+      residue = residue.replace(/,\s*ligera y fresca(?=\s*[,.]\s*ideal para cualquier ocasion\.)/g, '. ');
+      residue = residue.replace(/ademas, cuenta con practicos bolsillos y cierre trasero para mayor comodidad\./g, ' ');
+      residue = residue.replace(/,\s*podes combinarlo con la blusa haciendo juego o con cualquier remerita\s*:\)(?=\s*$)/g, '. ');
+      residue = residue.replace(/,\s*¡vas a enamorarte de su ajuste y estilo unico!(?=\s*$)/g, '. ');
+      residue = residue.replace(/,\s*super suave y combinable con todo\.(?=\s*$)/g, '. ');
       covered = covered && !additionalFiber;
     }
     // An additional unquantified component is not proof of a complete exterior either.

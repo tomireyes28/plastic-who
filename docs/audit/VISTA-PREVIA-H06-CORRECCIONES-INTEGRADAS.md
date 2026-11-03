@@ -4,6 +4,8 @@ Actualización del 3 de noviembre de 2026. **No se aplicaron cambios en la base.
 
 > Actualización posterior: las 86 declaraciones pendientes de Funky Monkeys ya se integraron en el parser y se verificaron con sus HTML guardados (76 algodón y 10 viscosa). Quedan 60 selecciones/transcripciones de este grupo de 339. Los totales y artefactos de este documento describen la fotografía anterior a esa integración; falta regenerar la propuesta acumulada con las nuevas huellas. Ver `PROGRESO-CORRECCIONES.md`.
 
+> Segunda actualización: las 28 declaraciones de Reír Enloquecer también se integraron y verificaron con los HTML guardados. Las 28 declaran 100% algodón y reproducen verde. De este grupo de 339, quedan las 32 transcripciones de One Place World; el resto de las colas y decisiones continúa pendiente. La vista previa acumulada todavía requiere regeneración con las nuevas huellas.
+
 ## Resultado principal
 
 La propuesta acumulada conserva **613 diferencias de análisis y 302 cambios de color** respecto de los datos almacenados. No cambia ningún color respecto de la última revisión manual. La mejora es que el código productivo ahora reproduce resultados que antes dependían de selecciones o normalizaciones locales.

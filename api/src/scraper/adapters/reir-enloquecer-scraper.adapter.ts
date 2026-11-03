@@ -29,7 +29,38 @@ function decodeHtmlEntities(html: string): string {
     .replace(/&nbsp;/gi, ' ')
     .replace(/&#39;/gi, "'")
     .replace(/&quot;/gi, '"')
+    .replace(/&iexcl;/gi, '¡')
     .replace(/&amp;/gi, '&');
+}
+
+function productText(html: string): string {
+  return decodeHtmlEntities(html
+    .replace(/<br\s*\/?>|<\/(?:p|div|li|h[1-6])\s*>/gi, '\n')
+    .replace(/<[^>]+>/g, ' '))
+    .split('\n').map(line => line.replace(/[ \t\r]+/g, ' ').trim())
+    .filter(Boolean).join('\n');
+}
+
+/** Read the product container through nested divs, never a generic footer user-content. */
+function productDescription(html: string): string {
+  const source = html.replace(/<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+  const opening = /<div\b[^>]*\bclass\s*=\s*(["'])(.*?)\1[^>]*>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = opening.exec(source))) {
+    if (!match[2].split(/\s+/).some(cls => ['js-product-description', 'product-description-content'].includes(cls))) continue;
+    const tags = /<\/?div\b[^>]*>/gi;
+    tags.lastIndex = opening.lastIndex;
+    const start = tags.lastIndex;
+    let depth = 1;
+    let tag: RegExpExecArray | null;
+    while ((tag = tags.exec(source))) {
+      depth += /^<\//.test(tag[0]) ? -1 : 1;
+      if (depth === 0) return productText(source.slice(start, tag.index));
+    }
+    // An unclosed container has no trustworthy boundary before other page sections.
+    return '';
+  }
+  return '';
 }
 
 @Injectable()
@@ -160,7 +191,10 @@ export class ReirEnloquecerScraperAdapter implements StoreScraperAdapter {
         return m ? m[1] : null;
       };
 
-      const rawTitle = getMeta('og:title') || '';
+      const productHeading = [...html.matchAll(/<h1\b[^>]*\bclass\s*=\s*(["'])(.*?)\1[^>]*>([\s\S]*?)<\/h1>/gi)]
+        .find(match => match[2].split(/\s+/).some(cls => ['js-product-name', 'product-name'].includes(cls)));
+      const rawTitle = getMeta('og:title')?.trim() || (productHeading ? productText(productHeading[3]) : '');
+      if (!rawTitle) return null;
       const name = rawTitle.replace(/\s*\|\s*Reir/i, '').trim();
       const imageUrl =
         getMeta('og:image:secure_url') || getMeta('og:image') || null;
@@ -188,24 +222,7 @@ export class ReirEnloquecerScraperAdapter implements StoreScraperAdapter {
         }
       }
 
-      // Extraer y limpiar descripción
-      const descMatches = [
-        ...html.matchAll(
-          /<div[^>]*class=["'][^"']*user-content[^"']*["'][^>]*>([\s\S]*?)<\/div>/gi,
-        ),
-      ];
-      let rawDescription = '';
-      for (const dm of descMatches) {
-        const clean = dm[1]
-          .replace(/<br\s*\/?>/gi, '\n')
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (clean.length > rawDescription.length) {
-          rawDescription = clean;
-        }
-      }
-      const descriptionText = decodeHtmlEntities(rawDescription);
+      const descriptionText = productDescription(html);
 
       const slugMatch = url.match(/\/productos\/([^/]+)\/?$/);
       const slug = slugMatch
