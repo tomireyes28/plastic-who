@@ -80,7 +80,7 @@ export class CompositionParserService {
     };
   }
 
-  /** Keep contiguous technical lines, including unlabeled percentage continuations. */
+  /** Keep technical declarations across prose, stopping at unrelated labeled sections. */
   extractCompositionSegment(rawText: string): string | null {
     if (!rawText) return null;
     const cleaned = cleanSource(rawText);
@@ -110,11 +110,22 @@ export class CompositionParserService {
     for (const line of lines.slice(start)) {
       if (!line) continue;
       const stop = /\b(?:cuidados|lavado|instrucciones|medidas|talles|colores)\s*:/i.exec(line);
-      const candidate = stop ? line.slice(0, stop.index).trim() : line;
-      if (candidate && (selected.length === 0 || header.test(candidate) || percentage.test(candidate) || isFiberList(candidate))) {
+      let candidate = stop ? line.slice(0, stop.index).trim() : line;
+      // CMS descriptions can repeat a declaration at the end of a commercial paragraph.
+      const declaration = header.exec(candidate);
+      if (declaration && selected.length > 0
+        && !/^[+\-−]?\d+(?:[.,]\d+)?\s*%/.test(candidate)
+        && !new RegExp(`^${FIBER_TOKEN_PATTERN}\\s+[+\\-−]?\\d+(?:[.,]\\d+)?\\s*%`).test(normalizeText(candidate))) {
+        candidate = candidate.slice(declaration.index).trim();
+      }
+      const normalized = normalizeText(candidate);
+      const fiberAtStart = new RegExp(`^${FIBER_TOKEN_PATTERN}`).exec(normalized);
+      const startsAmount = /^(?:[-•*]\s+)?[+\-−]?\d+(?:[.,]\d+)?\s*%/.test(normalized);
+      const fiberThenAmount = fiberAtStart && /^\s+[+\-−]?\d+(?:[.,]\d+)?\s*%/.test(normalized.slice(fiberAtStart[0].length));
+      // Retain unsupported technical labels so they cannot silently produce a false green.
+      const unknownSection = /^[\p{L}\p{N} ]{1,40}\s*:/u.test(candidate) && percentage.test(candidate);
+      if (candidate && (selected.length === 0 || declaration || startsAmount || fiberThenAmount || unknownSection || isFiberList(candidate))) {
         selected.push(candidate);
-      } else if (candidate) {
-        break;
       }
       if (stop) break;
     }
@@ -193,14 +204,25 @@ export class CompositionParserService {
     type Token = { start: number; end: number } & (
       { kind: 'FIBER'; name: string } | { kind: 'PERCENTAGE'; percentage: number }
     );
-    const tokens: Token[] = [];
+    const rawTokens: Token[] = [];
     for (const match of text.matchAll(new RegExp(FIBER_TOKEN_PATTERN, 'g'))) {
-      tokens.push({ kind: 'FIBER', name: match[0], start: match.index!, end: match.index! + match[0].length });
+      rawTokens.push({ kind: 'FIBER', name: match[0], start: match.index!, end: match.index! + match[0].length });
     }
     for (const match of text.matchAll(/[+\-−]?\d+(?:[.,]\d+)?\s*%/g)) {
-      tokens.push({ kind: 'PERCENTAGE', percentage: parseFloat(match[0].replace(',', '.').replace('−', '-')), start: match.index!, end: match.index! + match[0].length });
+      rawTokens.push({ kind: 'PERCENTAGE', percentage: parseFloat(match[0].replace(',', '.').replace('−', '-')), start: match.index!, end: match.index! + match[0].length });
     }
-    tokens.sort((a, b) => a.start - b.start);
+    rawTokens.sort((a, b) => a.start - b.start);
+    const tokens: Token[] = [];
+    // Collapse translated aliases before assigning amounts: otherwise a trailing alias
+    // can steal the percentage belonging to the next fiber in a bilingual blend.
+    for (const token of rawTokens) {
+      const previous = tokens[tokens.length - 1];
+      if (token.kind === 'FIBER' && previous?.kind === 'FIBER'
+        && /^\s*[-/–—]\s*$/.test(text.slice(previous.end, token.start))
+        && resolveFiber(previous.name)?.canonicalName === resolveFiber(token.name)?.canonicalName) {
+        previous.end = token.end;
+      } else tokens.push(token);
+    }
     const fibers: ParsedFiberItem[] = [];
     const used = new Set<number>();
     let percentages = 0;
@@ -229,17 +251,6 @@ export class CompositionParserService {
       }
     }
     invalid = invalid || declaredTotal > 100 + EPSILON;
-    // Bilingual labels such as "algodón-cotton" denote one fiber, not two amounts.
-    for (let index = 0; index < tokens.length; index++) {
-      const token = tokens[index];
-      if (token.kind !== 'FIBER' || used.has(index)) continue;
-      const previous = tokens[index - 1];
-      if (previous?.kind === 'FIBER' && used.has(index - 1)
-        && /^\s*[-/]\s*$/.test(text.slice(previous.end, token.start))
-        && resolveFiber(previous.name)?.canonicalName === resolveFiber(token.name)?.canonicalName) {
-        used.add(index);
-      }
-    }
     covered = covered && percentages > 0 && tokens.every((token, index) => token.kind !== 'FIBER' || used.has(index));
     const residue = [...tokens].reverse().reduce(
       (remaining, token) => remaining.slice(0, token.start) + ' '.repeat(token.end - token.start) + remaining.slice(token.end),

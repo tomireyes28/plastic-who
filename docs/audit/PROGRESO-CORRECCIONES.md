@@ -44,6 +44,14 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Verificación: 118 pruebas aprobadas (51 nuevas), incluida integración del pipeline con Prisma simulado; compilación del backend y tipos de la web correctos. También se inspeccionó localmente el comportamiento sobre el texto `rawComposition` de un build anterior, sin consultar ni escribir en la base; los casos ambiguos o no soportados pueden pasar a UNKNOWN intencionalmente.
 - Pendiente: despliegue y revisión/reprocesamiento de datos históricos en H06. Este commit no escribe en Supabase ni promete interpretar todos los formatos posibles.
 
+### H04 — Regresiones detectadas al revisar H06
+
+- Corregida la asociación de porcentajes en mezclas bilingües: los alias equivalentes se agrupan antes de asignar cantidades, tanto en el exterior como en el forro.
+- Las declaraciones repetidas después de prosa comercial se extraen sin arrastrar esa prosa y se deduplican. Una descripción intermedia no oculta un forro posterior; cuidados y medidas siguen delimitando la lectura.
+- Agregadas 20 pruebas con tres descripciones reales guardadas y variantes de formatos, límites y contradicciones. Las declaraciones parciales, excesivas o contradictorias siguen sin clasificar.
+- Verificación: 153 pruebas del backend aprobadas; build de API correcto. No se consultó ni modificó la base para esta corrección.
+- La vista previa anterior de H06 queda desactualizada respecto del parser. Se debe verificar la fuente y generar otra propuesta antes de considerar su aplicación.
+
 ## H06 — Vista previa lista; aplicación pendiente de revisión
 
 - Agregado un CLI exclusivo de solo lectura, sin importar el módulo de scraping ni ejecutar registros de marcas. PostgreSQL bloquea escrituras dentro de la transacción de lectura.

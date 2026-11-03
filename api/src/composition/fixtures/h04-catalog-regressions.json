@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Bianca Rose Midlight Flowers",
+    "sourceUrl": "https://www.wanama.com/productos/Bianca-Rose-Midlight-Flowers",
+    "capturedAt": "2026-11-03T14:17:15.663Z",
+    "description": "CALCE BOOT CUT, MID RISE. ESTILIZA EL CUERPO POR AJUSTAR EN LA PARTE SUPERIOR Y SU FORMA ACAMPANADA EN BOTA. CON BORDADOS EN CANESÚ Y EN FONDO DE BOLSILLO DELANTERO.\r\n\r\nLAVAR CON AGUA FRIA, NO CENTRIFUGAR.\r\nCOMPOSICION: 98% ALGODON 2% ELASTANO\nCALCE BOOT CUT, MID RISE. ESTILIZA EL CUERPO POR AJUSTAR EN LA PARTE SUPERIOR Y SU FORMA ACAMPANADA EN BOTA. CON BORDADOS EN CANESÚ Y EN FONDO DE BOLSILLO DELANTERO.  LAVAR CON AGUA FRIA, NO CENTRIFUGAR. COMPOSICION: 98% ALGODON 2% ELASTANO",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 98,
+      "syntheticPercentage": 2,
+      "hasSyntheticLining": false
+    }
+  },
+  {
+    "name": "Jean Madison Straight Rigid",
+    "sourceUrl": "https://www.desiderata.com.ar/zp364640sx-jean-madison-straight-rigid/p",
+    "capturedAt": "2026-11-03T14:17:15.663Z",
+    "description": "Composición: GENERO BASE: ALGODON 100%\nJean de tiro alto, calce rejalado, tiro a la cintura y pierna wide leg. Realizado en una sarga liviana de composición 100% algodón",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "syntheticPercentage": 0,
+      "hasSyntheticLining": false
+    }
+  },
+  {
+    "name": "Buzo Ying Girls",
+    "sourceUrl": "https://www.rapsodia.com.ar/11114521892a-buzo-ying-girls.html",
+    "capturedAt": "2026-11-03T14:17:15.663Z",
+    "description": "Composición: 50% algodón-cotton 50% poliéster-polyester con aplicación FORRO-LINING: 50% algodón-cotton 50% poliéster-polyester\n\nCuidados: lavar a máquina-temperatura máxima de lavado 30ºc-no usar blanqueador- no secar en máquina-secar extendido-secar a la sombra-no lavar en seco-no exprimir-",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 50,
+      "syntheticPercentage": 50,
+      "hasSyntheticLining": true
+    }
+  }
+]
