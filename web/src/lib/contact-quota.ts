@@ -5,6 +5,23 @@ let local = { hour: -1, day: -1, hourly: 0, daily: 0 };
 /** Global mail budgets avoid trusting spoofable client IP headers. */
 export async function reserveContactDelivery(now = Date.now()): Promise<'allowed' | 'limited' | 'unavailable'> {
   const hour = Math.floor(now / HOUR), day = Math.floor(now / DAY);
+  if (process.env.DATABASE_URL?.trim()) {
+    try {
+      const h = `hour:${hour}`, d = `day:${day}`;
+      const rows = await prisma.$queryRaw<{ allowed: boolean }[]>`
+        WITH hourly AS (
+          INSERT INTO "ContactQuota" ("bucket", "count", "expiresAt") VALUES (${h}, 1, ${new Date((hour + 1) * HOUR)})
+          ON CONFLICT ("bucket") DO UPDATE SET "count" = LEAST("ContactQuota"."count" + 1, 11)
+          RETURNING "count"
+        ), daily AS (
+          INSERT INTO "ContactQuota" ("bucket", "count", "expiresAt") VALUES (${d}, 1, ${new Date((day + 1) * DAY)})
+          ON CONFLICT ("bucket") DO UPDATE SET "count" = LEAST("ContactQuota"."count" + 1, 51)
+          RETURNING "count"
+        ) SELECT (hourly."count" <= 10 AND daily."count" <= 50) AS allowed FROM hourly, daily
+      `;
+      return rows[0]?.allowed === true ? 'allowed' : rows[0]?.allowed === false ? 'limited' : 'unavailable';
+    } catch { return 'unavailable'; }
+  }
   const url = process.env.UPSTASH_REDIS_REST_URL, token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (url && token) {
     try {
@@ -52,3 +69,5 @@ export async function readContactBody(request: Request): Promise<unknown> {
     })]);
   } finally { clearTimeout(timer); void reader.cancel().catch(() => {}); }
 }
+import { prisma } from './prisma';
+

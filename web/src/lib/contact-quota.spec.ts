@@ -1,9 +1,12 @@
 import { readContactBody, reserveContactDelivery } from './contact-quota';
+import { prisma } from './prisma';
+
+jest.mock('./prisma', () => ({ prisma: { $queryRaw: jest.fn() } }));
 
 const saved = { ...process.env };
 describe('Shared mail quota and bounded input (H08)', () => {
-  beforeEach(() => { Object.assign(process.env, { NODE_ENV: 'production', UPSTASH_REDIS_REST_URL: 'https://quota.invalid', UPSTASH_REDIS_REST_TOKEN: 'fixture' }); });
-  afterEach(() => { jest.restoreAllMocks(); for (const key of ['NODE_ENV', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN']) { if (saved[key] === undefined) delete process.env[key]; else process.env[key] = saved[key]; } });
+  beforeEach(() => { delete process.env.DATABASE_URL; Object.assign(process.env, { NODE_ENV: 'production', UPSTASH_REDIS_REST_URL: 'https://quota.invalid', UPSTASH_REDIS_REST_TOKEN: 'fixture' }); });
+  afterEach(() => { jest.restoreAllMocks(); for (const key of ['DATABASE_URL', 'NODE_ENV', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN']) { if (saved[key] === undefined) delete process.env[key]; else process.env[key] = saved[key]; } });
   it.each([{ result: 1, expected: 'allowed' }, { result: 0, expected: 'limited' }, { result: null, expected: 'unavailable' }])('uses an atomic shared reservation: %p', async ({ result, expected }) => {
     const fetcher = jest.spyOn(global, 'fetch').mockResolvedValue(new Response(JSON.stringify({ result })));
     expect(await reserveContactDelivery(0)).toBe(expected);
@@ -15,6 +18,16 @@ describe('Shared mail quota and bounded input (H08)', () => {
   });
   it('fails closed on store errors', async () => {
     jest.spyOn(global, 'fetch').mockRejectedValue(new Error('unavailable'));
+    expect(await reserveContactDelivery()).toBe('unavailable');
+  });
+  it.each([{ allowed: true, result: 'allowed' }, { allowed: false, result: 'limited' }])('uses the existing PostgreSQL atomically: %p', async ({ allowed, result }) => {
+    process.env.DATABASE_URL = 'fixture-only';
+    (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ allowed }]);
+    expect(await reserveContactDelivery(0)).toBe(result);
+  });
+  it('fails closed if the PostgreSQL quota table is not provisioned', async () => {
+    process.env.DATABASE_URL = 'fixture-only';
+    (prisma.$queryRaw as jest.Mock).mockRejectedValue(new Error('missing table'));
     expect(await reserveContactDelivery()).toBe('unavailable');
   });
   it('reads JSON within the limit', async () => {

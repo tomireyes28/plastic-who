@@ -29,6 +29,14 @@ enum TrafficLightColor {
   UNKNOWN
 }
 
+model ContactQuota {
+  bucket    String   @id
+  count     Int
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
 model Brand {
   id            String        @id @default(uuid())
   name          String

@@ -16,4 +16,20 @@ Este registro distingue correcciones locales de operaciones pendientes. No equiv
 | H22 | Corregido: diálogo nativo con título asociado, fondo inerte, foco inicial en cierre, ciclo Tab/Shift+Tab, Escape y restauración al disparador. Filtros con aria-pressed y acciones de quitar con nombre. Verificado en ambos modales con navegador y fixtures, incluido 390×844; tipos correctos. Evidencia local: previews/H22-modal-mobile.png |
 | Publicación | Pendiente: respaldo, autorización de datos, despliegue y recorrido final |
 
+## Preparación de contacto para Vercel y Hostinger
+
+El usuario confirmó web en Vercel y correo de Hostinger. Se mantiene SMTP como
+proveedor configurable mediante variables protegidas. No se copiaron contraseñas
+al repositorio ni se envió ningún correo de prueba real.
+
+La cuota puede usar el PostgreSQL existente sin añadir un servicio: se preparó
+`api/prisma/operations/contact-quota.sql` y su modelo Prisma, sin ejecutar DDL.
+La operación es aditiva, independiente del historial de migraciones ausente y
+requiere respaldo, revisión de la tabla inexistente y autorización antes de aplicar.
+La reserva usa dos contadores atómicos por hora/día; no guarda datos del mensaje
+ni direcciones personales. Sin tabla o ante fallo, se bloquea el envío con 503.
+Los contadores vencidos pueden limpiarse en mantenimiento; crecen a lo sumo dos
+filas por intervalo y no se eliminó información durante esta preparación.
+Las 48 pruebas web pasan con Prisma y proveedores simulados.
+
 Los textos públicos de fuente y las simulaciones no autorizan automáticamente ninguna escritura en producción. Los casos sin evidencia suficiente pueden conservar UNKNOWN o excluirse con una decisión explícita de alcance.
