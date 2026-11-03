@@ -71,11 +71,16 @@ El motor implementa:
 - **Resiliencia ante WAF y Rate-Limits**: Implementación de batching con pausas aleatorias (*jitter delays* de 250–550ms) y reintentos ante códigos HTTP 429/503.
 - **Detección Automática de Accesorios**: Filtrado por heurística de keywords para excluir calzado, carteras, cintos y perfumes, concentrando los recursos exclusivamente en prendas textiles.
 
-### 3. Motor de Clasificación Semafórica (Normativa Textil)
-- 🟢 **Verde (Fibra Noble):** $\ge 95\%$ de fibras naturales (algodón, lino, lana, seda, ramié). Tolera hasta un 5% de elastano para elasticidad funcional (ej. jeans elastizados).
-- 🟡 **Amarillo (Mezcla / Celulósica):** $70\% - 94\%$ natural, o presencia de fibras semisintéticas regeneradas (viscosa, modal, lyocell/tencel, rayón).
-- 🔴 **Rojo (Alto Plástico / Sintético):** $< 70\%$ natural, dominancia de fibras sintéticas (poliéster, acrílico, poliamida/nylon, poliuretano).
-- ⚠️ **Alerta de Forrería Sintética:** Si una prenda exteriormente natural tiene forro de poliéster, se advierte explícitamente en la ficha.
+### 3. Motor de Clasificación Semafórica (Criterio Propio de Composición)
+- 🟢 **Verde (Fibra Noble):** exterior con $\ge 95\%$ de fibras naturales y hasta un 5% de otras fibras. Sin forro sintético declarado.
+- 🟡 **Amarillo (Mezcla / Celulósica / Forro):** exterior con $70\%$ a menos de $95\%$ natural, o presencia de semisintéticas cuando no alcanza el verde. También un exterior que sería verde pero contiene fibras sintéticas en el forro.
+- 🔴 **Rojo (Alto Sintético):** exterior con $< 70\%$ natural y sin semisintéticas detectadas. El forro sintético no mejora un rojo a amarillo.
+- ⚠️ **Forrería Sintética:** se informa por separado, sin sumar sus porcentajes al exterior. Cualquier proporción sintética declarada en el forro impide el verde.
+
+Los umbrales son una política del proyecto, no una norma textil ni una certificación
+de salud, comodidad o impacto ambiental. El elastano aporta elasticidad, pero sigue
+siendo una fibra sintética; la tolerancia del 5% no se limita a él. Referencia:
+[Textile Exchange — Other Synthetics](https://textileexchange.org/other-synthetics/).
 
 ### 4. Rendimiento y Experiencia de Usuario (Frontend)
 - **Next.js 15 con App Router:** Carga inicial ultrarrápida mediante Server Components que consultan directamente la base de datos sin sobrecosto de roundtrips HTTP innecesarios.

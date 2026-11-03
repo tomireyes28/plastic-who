@@ -82,7 +82,8 @@ export class TrafficLightService {
     let trafficLight: TrafficLightColor = 'RED';
 
     if (naturalPercentage >= rules.greenMinNaturalPct) {
-      trafficLight = 'GREEN';
+      // A synthetic lining downgrades an otherwise green exterior, never upgrades red.
+      trafficLight = hasSyntheticLining ? 'YELLOW' : 'GREEN';
     } else if (
       naturalPercentage >= rules.yellowMinNaturalPct ||
       (rules.yellowIfHasSemiSynthetic && semiSyntheticPercentage > 0)

@@ -23,3 +23,11 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Los alias se evalúan por longitud y con límites de palabra; se normalizan tildes, mayúsculas y espacios.
 - Pruebas de diccionario y de análisis completo cubren ambos órdenes de porcentaje/nombre y otros alias existentes.
 - No se redefine aquí la política sobre una declaración que diga solamente «bambú». El histórico sigue pendiente de H06.
+
+## H05 — Política de semáforo y forro
+
+- Decisión del usuario: un exterior que sería verde baja a amarillo si declara fibras sintéticas en el forro. Los rojos no suben a amarillo por tener forro.
+- Se mantiene el mínimo de 95% natural del exterior y una tolerancia de hasta 5% de otras fibras, sin una excepción exclusiva para elastano. Se adoptó esta recomendación para expresar un criterio de composición y no una supuesta certificación ambiental.
+- Servicio, pruebas, README, guía, modal y etiqueta amarilla incluyen el criterio de forro; los porcentajes del forro no se suman al exterior.
+- Pruebas cubren distintos sintéticos, forros naturales/semisintéticos, porcentajes cero, el límite 95/5, rojos y exterior ausente.
+- Pendiente: desplegar y reprocesar el histórico en H06. La extracción incompleta y la advertencia cuando falta el exterior corresponden a H04.

@@ -14,8 +14,9 @@ export function FiberGuideView() {
         <p className="mt-2 text-sm leading-relaxed text-[#5a5d55]">
           No miramos nombres comerciales como &ldquo;eco-friendly&rdquo; ni
           &ldquo;tacto sedoso&rdquo;. Nuestro extractor lee directamente la línea
-          técnica de composición declarada por la marca y evalúa la proporción
-          de fibras nobles sobre el total de la tela exterior.
+          técnica de composición declarada por la marca. Evaluamos el exterior
+          y advertimos el forro por separado. Es un criterio propio de
+          composición, no una certificación de salud o impacto ambiental.
         </p>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
@@ -24,18 +25,20 @@ export function FiberGuideView() {
               Verde · ≥ 95% Natural
             </div>
             <p className="mt-1.5 text-xs leading-relaxed text-[#191c18]">
-              Prendas puras (100% algodón, lino, ramié, lana, seda) o jeans y
-              prendas de punto con hasta un 5% de elastano para dar calce.
+              Exterior con al menos 95% de fibras naturales y hasta un 5% de
+              otras fibras. Si tiene forro sintético declarado, baja a amarillo.
             </p>
           </div>
 
           <div className="border-l-4 border-[#c48b28] bg-[#f3efe6] p-4">
             <div className="font-label text-xs font-bold text-[#8c6014] uppercase">
-              Amarillo · 70–94% o Celulósicas
+              Amarillo · Mezclas, Celulósicas o Forro
             </div>
             <p className="mt-1.5 text-xs leading-relaxed text-[#191c18]">
-              Mezclas con mayoría natural (ej. 70% lana / 30% acrílico) o telas
-              de pulpa vegetal regenerada como viscosa, modal y lyocell/tencel.
+              Cuando no cumple el criterio verde: exterior con al menos 70%
+              natural, o presencia de viscosa, modal u otras semisintéticas.
+              También exterior que sería verde
+              pero tiene forro sintético, sin sumar ese forro al exterior.
             </p>
           </div>
 
@@ -44,8 +47,8 @@ export function FiberGuideView() {
               Rojo · &lt; 70% Natural
             </div>
             <p className="mt-1.5 text-xs leading-relaxed text-[#191c18]">
-              Prendas dominadas por plásticos derivados del petróleo (poliéster,
-              poliamida/nylon, acrílico, poliuretano/ecocuero).
+              Exterior con menos de 70% natural y sin semisintéticas detectadas.
+              Un forro sintético no mejora una clasificación roja.
             </p>
           </div>
         </div>

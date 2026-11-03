@@ -39,10 +39,9 @@ export function TrafficLightInfoModal({
           ¿Cómo puntuamos las prendas?
         </h2>
         <p className="mt-2 text-xs leading-relaxed text-[#5a5d55]">
-          Auditamos la composición técnica de cada prenda según la etiqueta
-          obligatoria declarada en el código fuente de cada tienda, sin dejarnos
-          llevar por etiquetas de marketing como &ldquo;eco-friendly&rdquo; o
-          &ldquo;tacto sedoso&rdquo;.
+          Clasificamos la composición declarada por la tienda con un criterio
+          propio sobre fibras. El color no es una certificación de salud,
+          comodidad o impacto ambiental de la prenda.
         </p>
 
         <div className="mt-5 space-y-3">
@@ -56,27 +55,27 @@ export function TrafficLightInfoModal({
               </span>
             </div>
             <p className="mt-1 text-xs leading-relaxed text-[#191c18]">
-              Prendas puras de algodón (pima, peinado, orgánico), lino, lana
-              merino, seda, cáñamo o bambú. Se tolera hasta un 5% de elastano
-              exclusivamente para ajuste y durabilidad. Pierde el verde si el
-              forro interno es de poliéster.
+              Tela exterior con al menos 95% de fibras naturales y hasta un 5%
+              de otras fibras, incluido elastano. Si se declara cualquier fibra
+              sintética en el forro, baja de verde a amarillo.
             </p>
           </div>
 
           <div className="border-l-4 border-[#c48b28] bg-[#f3efe6] p-3.5">
             <div className="flex items-center justify-between">
               <span className="font-label text-xs font-bold text-[#8c6014] uppercase">
-                🟡 Amarillo · Semisintéticas y Mezclas (70–94%)
+                🟡 Amarillo · Mezclas, Celulósicas o Forro
               </span>
               <span className="font-label text-[10px] bg-[#c48b28]/15 px-2 py-0.5 text-[#8c6014] font-bold">
                 INTERMEDIO
               </span>
             </div>
             <p className="mt-1 text-xs leading-relaxed text-[#191c18]">
-              Telas de pulpa vegetal regenerada como viscosa, modal, rayón o
-              lyocell/tencel; o mezclas naturales con presencia moderada de
-              sintéticos. También prendas exteriores naturales que tienen forrería
-              de poliéster.
+              Cuando no cumple el criterio verde: exterior con al menos 70%
+              natural, o presencia de semisintéticas como viscosa, modal o
+              lyocell. También un exterior
+              que sería verde pero tiene forro sintético. El forro se informa
+              por separado: no se suma a los porcentajes del exterior.
             </p>
           </div>
 
@@ -90,10 +89,9 @@ export function TrafficLightInfoModal({
               </span>
             </div>
             <p className="mt-1 text-xs leading-relaxed text-[#191c18]">
-              Prendas dominadas por fibras plásticas derivadas del petróleo:
-              poliéster, microtul, poliamida/nylon, acrílico o poliuretano. No
-              respiran térmicamente y desprenden miles de microplásticos por
-              lavado.
+              Exterior con menos de 70% natural y sin fibras semisintéticas
+              detectadas. Un forro sintético no convierte una prenda roja en
+              amarilla.
             </p>
           </div>
 

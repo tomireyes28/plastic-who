@@ -52,7 +52,7 @@ describe('CompositionParserService', () => {
     expect(result.trafficLight).toBe('YELLOW');
   });
 
-  it('debe separar Exterior de Forrería y marcar hasSyntheticLining = true sin sumar 200%', () => {
+  it('debe separar Exterior de Forrería y bajar a AMARILLO por forro sintético sin sumar 200%', () => {
     const jacketDescription =
       'Blazer sastrero. Composición: Exterior: 100% Lino. Forrería: 100% Poliéster.';
 
@@ -60,7 +60,7 @@ describe('CompositionParserService', () => {
 
     expect(result.naturalPercentage).toBe(100);
     expect(result.syntheticPercentage).toBe(0);
-    expect(result.trafficLight).toBe('GREEN');
+    expect(result.trafficLight).toBe('YELLOW');
     expect(result.hasSyntheticLining).toBe(true);
   });
 

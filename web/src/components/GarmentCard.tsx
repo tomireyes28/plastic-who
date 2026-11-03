@@ -23,8 +23,8 @@ const STAMP_CONFIG: Record<
     dotClass: 'bg-[#2b593f]',
   },
   YELLOW: {
-    label: 'AMARILLO · MEZCLA / CELULÓSICA',
-    sublabel: '70–94% nat. o semisintético',
+    label: 'AMARILLO · VER COMPOSICIÓN',
+    sublabel: 'Mezcla natural, semisintético o forro sintético',
     badgeClass:
       'border-[#c48b28]/50 bg-[#c48b28]/15 text-[#6e4b0c]',
     dotClass: 'bg-[#c48b28]',
