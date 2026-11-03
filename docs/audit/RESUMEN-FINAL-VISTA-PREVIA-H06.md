@@ -1,5 +1,7 @@
 # H06 — Resumen final de la vista previa
 
+> Actualización posterior: el contraste de las 464 propuestas calculadas está documentado en `docs/audit/REVISION-PROPUESTAS-CALCULADAS-H06.md`. Ese reporte y el escenario `H06-2026-11-03-calculadas-prioridad` reemplazan las cifras de propuesta de este resumen, que conserva la situación previa a ese contraste.
+
 Estado al 3 de noviembre de 2026: **revisión consolidada; reparación de la base pendiente**. Ningún cambio aplicado, ningún producto aprobado para aplicar y ningún despliegue realizado durante estas revisiones.
 
 La propuesta usa una captura de 4.662 productos y evidencia pública guardada del mismo día. No representa una lectura nueva del estado actual de la base. Los artefactos detallados están en `docs/audit/previews/`, ignorados por Git; conservan datos anteriores, fuentes, fechas y huellas.
