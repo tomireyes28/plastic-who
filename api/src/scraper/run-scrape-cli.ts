@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
+import { ScraperCliModule } from './scraper-cli.module';
 import { ScrapeExecutionSummary, ScraperService } from './scraper.service';
 
 async function runCli() {
   const target = (process.argv[2] || 'all').toLowerCase();
   const maxProducts = process.argv[3] ? parseInt(process.argv[3], 10) : 30;
 
-  const appContext = await NestFactory.createApplicationContext(AppModule);
+  const appContext = await NestFactory.createApplicationContext(ScraperCliModule);
   try {
     const scraperService = appContext.get(ScraperService);
     if (target === 'all') {

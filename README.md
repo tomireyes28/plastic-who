@@ -140,7 +140,14 @@ npm run test:api
 ```
 
 ### 6. Ejecutar Scraping de Marcas (Opcional)
+
+El scraping se ejecuta exclusivamente por CLI o por el workflow de GitHub Actions.
+La API HTTP solo expone consultas de catálogo y salud: no ofrece rutas para
+iniciar scraping ni registra marcas al arrancar. Para actualizar el catálogo,
+ejecutá estos comandos desde un entorno con las credenciales de base configuradas.
+
 ```bash
+npm run build:api      # Compilar el CLI antes de ejecutarlo
 npm run scrape:paula    # Paula Cahen D'Anvers
 npm run scrape:wanama   # Wanama
 npm run scrape:rapsodia # Rapsodia

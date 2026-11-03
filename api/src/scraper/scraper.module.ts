@@ -11,12 +11,10 @@ import { ReirEnloquecerScraperAdapter } from './adapters/reir-enloquecer-scraper
 import { VtexScraperAdapter } from './adapters/vtex-scraper.adapter';
 import { WanamaScraperAdapter } from './adapters/wanama-scraper.adapter';
 import { STORE_SCRAPER_ADAPTERS } from './interfaces/store-scraper-adapter.interface';
-import { ScraperController } from './scraper.controller';
 import { ScraperService } from './scraper.service';
 
 @Module({
   imports: [CompositionModule],
-  controllers: [ScraperController],
   providers: [
     WanamaScraperAdapter,
     MarkovaScraperAdapter,
