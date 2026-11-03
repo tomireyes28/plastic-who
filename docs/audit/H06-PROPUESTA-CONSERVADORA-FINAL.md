@@ -49,6 +49,9 @@ Los archivos por producto siguen fuera de Git:
 - `docs/audit/previews/H06-cierre-portfolio/final/preview.json`: propuesta vigente.
 - Las salidas `revisada` son intermedias; no deben usarse para aplicar.
 
+Hash íntegro de la propuesta vigente:
+`5271e51a45fa22521d30c9b692086a3ab6fd68fe0bcb17c601566ee03941d949`.
+
 `api/scripts/build-reviewed-preview.cjs` reproduce las capturas guardadas sin red,
 comprueba identidad, hashes de HTML/imágenes, correspondencia de snapshots,
 versiones del analizador y cantidades. Rechaza entradas cambiadas y directorios

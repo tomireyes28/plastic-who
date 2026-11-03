@@ -38,4 +38,30 @@ Los contadores vencidos pueden limpiarse en mantenimiento; crecen a lo sumo dos
 filas por intervalo y no se eliminó información durante esta preparación.
 Las 48 pruebas web pasan con Prisma y proveedores simulados.
 
+Para Hostinger Email, la referencia oficial indica `smtp.hostinger.com`, SSL y
+puerto 465: [configuración oficial](https://www.hostinger.com/support/1575756-how-to-get-email-account-configuration-details-for-hostinger-email/).
+Confirmar en el panel qué servicio de correo usa la cuenta (puede variar según
+el plan) y copiar sus valores en las variables protegidas de Vercel, sin enviarlos
+por chat. La clave no se guarda en Git. La sesión de Vercel del navegador está
+en la pantalla de login y todavía no se ha vinculado una CLI de despliegue.
+
+## Verificación final local
+
+- 383 pruebas del backend y 52 de web aprobadas: 435 en total.
+- Builds de API y web correctos. Portada y contacto figuran dinámicos.
+- Prueba HTTP del build aprobada: renovación entre solicitudes, fallo honesto,
+  vacío, recuperación y demo explícita; exclusivamente fuentes locales simuladas.
+- Los 4.662 estados de la propuesta final validan cantidades, agregados, forro
+  y coherencia de clasificación sin abrir un cliente de base de datos.
+- Trabajo versionado en commits separados por hallazgo. No se hizo push, no se
+  desplegó, no se envió correo real, no se creó ContactQuota y no se aplicó H06.
+
+Para publicar faltan la aprobación concreta de H06 y la operación SQL aditiva,
+el respaldo y la aplicación real, acceso al proyecto de Vercel, configuración
+SMTP/cuota y el recorrido de verificación sobre la versión desplegada. Se
+solicitó la aprobación del plan de 752 registros y el inicio de sesión; ambas
+respuestas siguen siendo necesarias. Las alertas residuales de dependencias y
+las mejoras pospuestas permanecen documentadas; no se declaran resueltas por
+compilar correctamente.
+
 Los textos públicos de fuente y las simulaciones no autorizan automáticamente ninguna escritura en producción. Los casos sin evidencia suficiente pueden conservar UNKNOWN o excluirse con una decisión explícita de alcance.
