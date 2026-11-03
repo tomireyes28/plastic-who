@@ -173,8 +173,17 @@ export function normalizeText(input: string): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
+
+// Specific expressions must precede a contained generic alias (e.g. bamboo viscose).
+const FIBER_MATCHERS = FIBER_DICTIONARY.flatMap((def) =>
+  def.synonyms.map((syn) => {
+    const alias = normalizeText(syn);
+    return { def, alias, pattern: new RegExp(`(^|[^a-z0-9])${alias}($|[^a-z0-9])`, 'i') };
+  }),
+).sort((a, b) => b.alias.length - a.alias.length);
 
 /**
  * Busca a qué fibra del diccionario corresponde un nombre extraído de una ficha.
@@ -186,20 +195,12 @@ export function resolveFiber(rawFiberName: string): {
   const cleaned = normalizeText(rawFiberName);
   if (!cleaned) return null;
 
-  for (const def of FIBER_DICTIONARY) {
-    for (const syn of def.synonyms) {
-      const normalizedSyn = normalizeText(syn);
-      // Coincidencia exacta o como palabra completa dentro del fragmento
-      const wordBoundaryRegex = new RegExp(
-        `(^|[^a-z0-9])${normalizedSyn}($|[^a-z0-9])`,
-        'i',
-      );
-      if (cleaned === normalizedSyn || wordBoundaryRegex.test(cleaned)) {
-        return {
-          canonicalName: def.canonicalName,
-          category: def.category,
-        };
-      }
+  for (const { def, alias, pattern } of FIBER_MATCHERS) {
+    if (cleaned === alias || pattern.test(cleaned)) {
+      return {
+        canonicalName: def.canonicalName,
+        category: def.category,
+      };
     }
   }
 

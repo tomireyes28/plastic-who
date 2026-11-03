@@ -16,3 +16,10 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - One Place World ahora conserva la descripción del producto o, como alternativa, su metadata de descripción.
 - Pruebas con HTML simulado verifican ausencia de porcentajes inventados y conservación de mezclas explícitas en las tres marcas.
 - Pendiente: los registros históricos no cambian con este commit; su revisión/reprocesamiento corresponde a H06. La pérdida de secciones del parser se aborda separadamente en H04.
+
+## H03 — Sinónimos específicos antes de palabras genéricas
+
+- «Viscosa de bambú» se reconoce como viscosa semisintética, sin que «bambú» capture primero el texto.
+- Los alias se evalúan por longitud y con límites de palabra; se normalizan tildes, mayúsculas y espacios.
+- Pruebas de diccionario y de análisis completo cubren ambos órdenes de porcentaje/nombre y otros alias existentes.
+- No se redefine aquí la política sobre una declaración que diga solamente «bambú». El histórico sigue pendiente de H06.
