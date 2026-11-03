@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { TrafficLightColor } from '@prisma/client';
 import { CatalogService } from './catalog.service';
 
@@ -27,12 +27,15 @@ export class CatalogController {
     @Query('limit') limit?: string,
   ) {
     const validTrafficLight =
-      trafficLight && ['GREEN', 'YELLOW', 'RED'].includes(trafficLight.toUpperCase())
+      trafficLight && ['GREEN', 'YELLOW', 'RED', 'UNKNOWN'].includes(trafficLight.toUpperCase())
         ? (trafficLight.toUpperCase() as TrafficLightColor)
         : undefined;
 
-    const parsedMinPct = minNaturalPct ? parseFloat(minNaturalPct) : undefined;
-    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+    if (trafficLight && trafficLight.toUpperCase() !== 'ALL' && !validTrafficLight) throw new BadRequestException('Semáforo inválido');
+    const parsedMinPct = minNaturalPct !== undefined ? Number(minNaturalPct) : undefined;
+    const parsedLimit = limit !== undefined ? Number(limit) : undefined;
+    if (minNaturalPct !== undefined && (!minNaturalPct.trim() || !Number.isFinite(parsedMinPct) || parsedMinPct! < 0 || parsedMinPct! > 100)) throw new BadRequestException('Porcentaje inválido');
+    if (limit !== undefined && (!/^\d+$/.test(limit) || !Number.isInteger(parsedLimit) || parsedLimit! < 1)) throw new BadRequestException('Límite inválido');
 
     return this.catalogService.getProducts({
       brandSlug,

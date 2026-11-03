@@ -64,13 +64,22 @@ export async function fetchBrands(): Promise<BrandSummary[]> {
 export async function fetchProducts(
   filters: ProductFilters = {},
 ): Promise<ProductCardItem[]> {
-  const limit = filters.limit ?? 5000;
+  const limit = Number.isInteger(filters.limit) && filters.limit! > 0 ? Math.min(filters.limit!, 5000) : 5000;
+  const fiber = filters.fiber?.toLowerCase().trim();
 
   if (process.env.DATABASE_URL) {
     const rows = await prisma.product.findMany({
       where: {
         isActive: true,
-        ...(filters.brand ? { brand: { slug: filters.brand } } : {}),
+        ...(filters.brand ? { brand: { slug: filters.brand.toLowerCase().trim() } } : {}),
+        ...(filters.trafficLight && filters.trafficLight !== 'ALL' ? { trafficLight: filters.trafficLight } : {}),
+        ...(filters.category ? { category: { equals: filters.category.trim(), mode: 'insensitive' as const } } : {}),
+        ...(filters.search ? { name: { contains: filters.search.trim(), mode: 'insensitive' as const } } : {}),
+        ...(fiber ? { fibers: { some: { isLining: false, percentage: { gt: 0 },
+          ...(fiber === 'otros naturales' || fiber === 'otros-naturales'
+            ? { category: 'NATURAL' as const, fiberName: { notIn: ['algodón', 'lino', 'lana'] } }
+            : { fiberName: { equals: fiber, mode: 'insensitive' as const } }),
+        } } } : {}),
       },
       take: limit,
       orderBy: [{ naturalPercentage: 'desc' }, { updatedAt: 'desc' }],
@@ -117,7 +126,10 @@ export async function fetchProducts(
   }
 
   const baseUrl = process.env.CATALOG_API_URL || API_BASE_URL || 'http://localhost:3001/api';
-  const res = await fetch(`${baseUrl}/products?limit=${limit}`, {
+  const params = new URLSearchParams({ limit: String(limit) });
+  for (const field of ['brand', 'fiber', 'category', 'search'] as const) if (filters[field]?.trim()) params.set(field, filters[field]!.trim());
+  if (filters.trafficLight && filters.trafficLight !== 'ALL') params.set('trafficLight', filters.trafficLight);
+  const res = await fetch(`${baseUrl}/products?${params}`, {
     cache: 'no-store',
     signal: AbortSignal.timeout(10000),
   });
