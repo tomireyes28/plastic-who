@@ -66,6 +66,14 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Escenario vigente tras ese contraste: 613 diferencias de análisis y 302 cambios de color; 339 productos con declaración clasificable incorporada (incluidas las salvedades de bambú/microfibra), cero excesos propuestos y cero aprobaciones para aplicar. Las 180 alertas de los casos históricos son una cola independiente. Detalle y próximos pasos en `docs/audit/REVISION-PROPUESTAS-CALCULADAS-H06.md`; no se cambió código productivo ni se consultó/escribió la base en esta revisión.
 - Pendiente: revisar la vista previa con el usuario y definir la aplicación con respaldo y comprobación de datos vigentes. No se ha corregido todavía la base real.
 
+### Integración H06 — Descripción principal de Wanama separada del resumen
+
+- El adaptador usa `description` cuando contiene texto y recurre a `brief_description` únicamente si falta la principal o está vacía/en blanco. Los dos campos dejan de concatenarse, incluso si la principal es parcial o no contiene porcentajes.
+- El panel independiente de composición se conserva con la descripción seleccionada; una contradicción real entre esas fuentes no se descarta. Se preservan saltos de línea y texto original de la principal.
+- Agregadas 34 pruebas: 23 extractos técnicos de las fichas comprobadas, alternativas de descripción vacía, declaraciones incompletas, forro, panel independiente y paso por el pipeline con Prisma simulado. Layer Not Sutton I sigue UNKNOWN con evidencia parcial; el mapeo de microfibra continúa pendiente y no se fija como expectativa de categoría en estas pruebas.
+- Verificación: primero se reprodujo la regresión (29 fallos de las 34 pruebas nuevas); con la corrección pasan las 187 pruebas del backend y el build de API. No se consultaron tiendas ni la base, ni se ejecutó persistencia real.
+- Pendiente operativo: desplegar el adaptador corregido antes de reparar el histórico. Los datos almacenados y las vistas previas anteriores no se reescriben con este commit. Continúan pendientes las otras selecciones/normalizaciones de H06 y la aplicación controlada.
+
 ## H07 — Catálogo dinámico, sin fallback implícito
 
 - La portada ahora se renderiza por solicitud. No congela consultas Prisma en el build; la siguiente carga o recarga vuelve a leer la fuente.

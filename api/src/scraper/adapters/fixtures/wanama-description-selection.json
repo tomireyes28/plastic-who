@@ -1,0 +1,296 @@
+[
+  {
+    "name": "Jean Baggy Mid Color",
+    "sourceUrl": "https://www.wanama.com/productos/141-2168_-_jean_baggy_mid_color",
+    "capturedAt": "2026-11-03T17:01:41.703Z",
+    "description": "COMPOSICIÓN: 100% ALGODÓN.\r\nLAVAR A MANO CON AGUA FRIA.\r\nNO USAR LEJÍA NI BLANQUEADOR.\r\nPLANCHA TEMPERATURA MEDIA.\r\nNO LIMPIAR E",
+    "briefDescription": "COMPOSICIÓN: 100% AL",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Chaqueta Rider Mid Light Blue",
+    "sourceUrl": "https://www.wanama.com/productos/166-1161_-_chaqueta_rider_mid_light_blue",
+    "capturedAt": "2026-11-03T17:01:42.434Z",
+    "description": "COMPOSICION:100% ALGODÓN\r\nCOLOR:AZUL\r\nTALLE:40/42/44/46\r\n\r\n",
+    "briefDescription": "COMPOSICION:100% ALGODÓNCOLOR:AZULTALLE:40/42/44/46LAVAR A MANO",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Vestido Sunshine Blink",
+    "sourceUrl": "https://www.wanama.com/productos/135L-1020_-_vestido_sunshine_blink",
+    "capturedAt": "2026-11-03T17:01:45.452Z",
+    "description": "COMPO:100% POLIESTER\t\t\t\t\r\nLAVAR A MANO CON AGUA FRIA CON JABON NEUTRO.\r\nNO USAR LEJIA/BLANQUEADOR.\r\nSECADO EN HORIZONTAL.\r\nNO USAR SECADORA\r\nNO PLANCHAR\r\nINDUSTRIA ARGENTINA",
+    "briefDescription": "COMPO:100% POLIESTER\t\t\t\tLAVAR A MANO CON AGUA FRIA CON JABON NEU",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 100
+    }
+  },
+  {
+    "name": "Cardigan Aretha",
+    "sourceUrl": "https://www.wanama.com/productos/1801-1623_-_cardigan_aretha",
+    "capturedAt": "2026-11-03T17:01:47.318Z",
+    "description": "COMPOSICIÓN: 100% ALGODÓN\r\n\r\nGuía para el cuidado de la sweaters:\r\nLAVAR A MANO CON AGUA FRIA \r\nUSAR JABON NEUTRO \r\nSEPARA",
+    "briefDescription": "COMPOSICIÓN: 1",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Jean Rocker Mid Dark Blue Paul",
+    "sourceUrl": "https://www.wanama.com/productos/141-2209_-_jean_rocker_mid_dark_blue_paul",
+    "capturedAt": "2026-11-03T17:01:48.767Z",
+    "description": "COMPOSICIÓN: 100% ALGODÓN.\r\nLAVAR A MANO CON AGUA FRIA.\r\nNO USAR LEJÍA NI BLANQUEADOR.\r\nPLANCHA A TEMPERATURA MEDIA.\r\nNO",
+    "briefDescription": "COMPOSICIÓN:",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Musculosa Velvet",
+    "sourceUrl": "https://www.wanama.com/productos/1804-1056_-_musculosa_velvet",
+    "capturedAt": "2026-11-03T17:01:55.268Z",
+    "description": "COMPOSICION: 100% ALGODÓN\r\n\r\nGuía para el cuidado de la sweaters \r\n\r\nLAVAR A MANO CON AGUA FRIA \r\nUSAR JABON NEUTRO \r\nSEPARAR COLORES OSCUROS",
+    "briefDescription": "COMPOSICION: 100% ALGODÓNGu?",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Falda Alodia",
+    "sourceUrl": "https://www.wanama.com/productos/130-1843_-_falda_alodia",
+    "capturedAt": "2026-11-03T17:01:58.934Z",
+    "description": "COMPO:100% POLIESTER\t\t\t\t\r\nLAVAR A MANO CON AGUA FRIA CON JABON NEUTRO.\r\nNO USAR LEJIA/BLANQUEADOR.\r\nSECADO EN HORIZONTAL.\r\nNO USAR SECADORA\r\nNO PLANCHAR\r\nINDUSTRIA ARGENTINA",
+    "briefDescription": "COMPO:100% POLIESTER\t\t\t\tLAVAR A MANO CON AGUA FRIA CON JABON NEUTRO.NO",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 100
+    }
+  },
+  {
+    "name": "Jerry Petit Black Rose Jeans",
+    "sourceUrl": "https://www.wanama.com/productos/141-1631_-_jerry-petit-black-rose-jeans",
+    "capturedAt": "2026-11-03T17:01:59.185Z",
+    "description": "COMPOSICIÓN: 98 % ALGODÓN - 2% ELASTANO\r\nLAVAR A MANO CON AGUA FRIA",
+    "briefDescription": "COMPOSICIÓN: 98 % ALGODÓN - 2% ELASTANOLAVAR A MANO CON AGUA FRIA",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 98,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 2
+    }
+  },
+  {
+    "name": "Polera New York Ii",
+    "sourceUrl": "https://www.wanama.com/productos/1803-1370_-_polera_new_york_ii",
+    "capturedAt": "2026-11-03T17:02:00.451Z",
+    "description": "COMPOSICION: 100% ACRILICO\r\nGuía para el cuidado de la sweaters \r\n\r\nLAVAR A MANO CON AGUA FRIA \r\nUSAR JABON NEUTRO \r\nSEPARAR COLORES OSCURO",
+    "briefDescription": "COMPOSICION: 100% ACRILICOGu",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 100
+    }
+  },
+  {
+    "name": "Jean  Carla White Paul",
+    "sourceUrl": "https://www.wanama.com/productos/141-1832_-_jean-carla-white-paul",
+    "capturedAt": "2026-11-03T17:02:01.735Z",
+    "description": "COMPOSICION:100% ALGODON\r\nLAVAR A MANO CON AGUA FRÍA Y JABÓN NEUTRO",
+    "briefDescription": "COMPOSICION:100% ALGODONLAVAR A MANO CON AGUA FRÍA Y JABÓN NEUTRO",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Bianca Rose Black Jeans II",
+    "sourceUrl": "https://www.wanama.com/productos/141-2011_-_bianca-rose-black-jeans-ii",
+    "capturedAt": "2026-11-03T17:02:03.101Z",
+    "description": "COMPOSICIÓN: 98% ALGODÓN 2% ELASTANO\r\nLAVAR A MANO CON AGUA FRÍA Y JABÓN NEUTRO.\r\n\r\nORIGEN: ARGENTINA\r\n",
+    "briefDescription": "COMPOSICIÓN: 98% ALGODÓN 2% ELASTANOLAVAR A MANO CON AGUA FRÍA Y JABÓN NEUTRO.ORIGEN: ARGENTINA",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 98,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 2
+    }
+  },
+  {
+    "name": "Vestido Velvet",
+    "sourceUrl": "https://www.wanama.com/productos/1815-1016_-_vestido_velvet",
+    "capturedAt": "2026-11-03T17:02:03.516Z",
+    "description": "COMPOSICION: 100% ALGODÓN\r\nGuía para el cuidado de la sweaters \r\n\r\nLAVAR A MANO CON AGUA FRIA \r\nUSAR JABON NEUTRO \r\nSEPARAR COLORES OSCUROS DE LOS ",
+    "briefDescription": "COMPOSICION: 100% ALGODÓNGuía para ",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Vestido Lily Dharma",
+    "sourceUrl": "https://www.wanama.com/productos/134-1813_-_vestido-lily-dharma",
+    "capturedAt": "2026-11-03T17:02:04.551Z",
+    "description": "COMPOSICIÓN: 100% POLIESTER\r\nCOLOR: NEGRO",
+    "briefDescription": "COMPOSICIÓN: 100% POLIESTERCOLOR: NEGRO",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 100
+    }
+  },
+  {
+    "name": "Polera America I",
+    "sourceUrl": "https://www.wanama.com/productos/1803-1371_-_polera_america_i",
+    "capturedAt": "2026-11-03T17:02:06.034Z",
+    "description": "COMPOSICION: \r\n80%ACRILICO\r\n20 % POLIAMIDA SILICONADA \r\n\r\nGuía para el cuidado de la sweaters\r\nLAVAR A MANO CON AGUA FRIA",
+    "briefDescription": "COMPOSICION:",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 100
+    }
+  },
+  {
+    "name": "Musculosa Godet",
+    "sourceUrl": "https://www.wanama.com/productos/1804-1057_-_musculosa_godet",
+    "capturedAt": "2026-11-03T17:02:11.301Z",
+    "description": "COMPOSICION: 70% VISCOSA 30% POLIAMIDA\r\n\r\nGuía para el cuidado de la sweaters \r\n\r\nLAVAR A MANO CON AGUA FRIA \r\nUSAR JABON NEUTRO \r\nSEPARAR COLORES OSCUROS DE LOS CLAROS\r\nNO USAR LEJIA - BLANQU",
+    "briefDescription": "COMPOSICION: 70% VISCOSA 30% POLIAMIDAGuía para el cuidado de la sweaters ",
+    "expected": {
+      "trafficLight": "YELLOW",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 70,
+      "syntheticPercentage": 30
+    }
+  },
+  {
+    "name": "Vestido Moss Sunshine Slim Ii",
+    "sourceUrl": "https://www.wanama.com/productos/135-2363_-_vestido_moss_sunshine_slim_ii",
+    "capturedAt": "2026-11-03T17:02:12.471Z",
+    "description": "COMPOSICIÓN: 100% POLIESTER\r\n\r\nINDUSTRIA ARGENTINA - LAVAR A MANO \r\n",
+    "briefDescription": "COMPOSICIÓN: 100% POLIESTERIN",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 100
+    }
+  },
+  {
+    "name": "Short Mid Blue",
+    "sourceUrl": "https://www.wanama.com/productos/142-3464_-_short_mid_blue",
+    "capturedAt": "2026-11-03T17:02:14.384Z",
+    "description": "COMPOSICIÓN: 100% ALGODÓN.\r\nLAVAR A MANO CON AGUA FRÍA.\r\nNO USAR LEJÍA NI BLANQUEADOR.\r\nPLANCHAR A TEMPERATURA MEDIA.\r\nNO LIM",
+    "briefDescription": "COMPOSICIÓN: 100% ",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Cardigan Ginna",
+    "sourceUrl": "https://www.wanama.com/productos/1801-1607_-_cardigan_ginna",
+    "capturedAt": "2026-11-03T17:02:14.967Z",
+    "description": "COMPOSICION :\r\n90% ACRILICO\r\n10% POLIAMIDA SILICONADA \r\nLAVAR A MANO CON AGUA FRIA USAR JABON NEUTRO SEPARAR COLORES OSCUROS DE LOS CLAROS NO USA",
+    "briefDescription": "COMPOSICION :90% ACRILICO10% PO",
+    "expected": {
+      "trafficLight": "RED",
+      "naturalPercentage": 0,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 100
+    }
+  },
+  {
+    "name": "Jean Paul Destroyed Mid Used Light Blue",
+    "sourceUrl": "https://www.wanama.com/productos/141-2212_-_jean_paul_destroyed_mid_used_light_blue",
+    "capturedAt": "2026-11-03T17:02:16.116Z",
+    "description": "COMPOSICIÓN: 100% ALGODÓN.\r\nLAVAR A MANO CON AGUA FRIA Y CON JABON NEUTRO.\r\nNO USAR LEJIA/ BLANQUEADOR.\r\nNO LIMPIAR EN SECO.",
+    "briefDescription": "COMPOSICIÓN: 10",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Sweater Dakota Winter",
+    "sourceUrl": "https://www.wanama.com/productos/1800-2105_-_sweater_dakota_winter_",
+    "capturedAt": "2026-11-03T17:02:16.384Z",
+    "description": "COMPOSICION: 100% MICROFIBRA \r\n\r\nLAVAR A MANO CON AGUA FRIA \r\nUSAR JABON NEUTRO \r\nSEPARAR COLORES OSCUROS DE LOS CLAROS\r\nNO USAR LEJI",
+    "briefDescription": "COMPOSICION: 100% MICRO",
+    "expected": null
+  },
+  {
+    "name": "Short Used Black Light Blue",
+    "sourceUrl": "https://www.wanama.com/productos/142-3465_-_short_used_black_light_blue_",
+    "capturedAt": "2026-11-03T17:02:17.751Z",
+    "description": "COMPOSICIÓN: 98% ALGODÓN.2%ELASTANO\r\nLAVAR A MANO CON AGUA FRÍA.\r\nNO USAR LEJÍA NI BLANQUEADOR.\r\nPLANCHAR A TEMPERATURA MEDIA",
+    "briefDescription": "COMPOSICIÓN: 98% A",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 98,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 2
+    }
+  },
+  {
+    "name": "Short Long Mid Light Blue",
+    "sourceUrl": "https://www.wanama.com/productos/142-3462_-_short_long_mid_light_blue",
+    "capturedAt": "2026-11-03T17:02:17.851Z",
+    "description": "COMPOSICIÓN: 100% ALGODÓN.\r\nLAVAR A MANO CON AGUA FRÍA.\r\nNO USAR LEJÍA NI BLANQUEADOR.\r\nPLANCHAR A TEMPERATURA MEDIA.\r\nNO LIM",
+    "briefDescription": "COMPOSICIÓN: 100% ",
+    "expected": {
+      "trafficLight": "GREEN",
+      "naturalPercentage": 100,
+      "semiSyntheticPercentage": 0,
+      "syntheticPercentage": 0
+    }
+  },
+  {
+    "name": "Layer Not Sutton I",
+    "sourceUrl": "https://www.wanama.com/productos/1802-1306_-_layer-not-sutton-i",
+    "capturedAt": "2026-11-03T17:02:19.050Z",
+    "description": "COMPOSICION: 50% ACRILICO - 30% LANA SHETLAND - 20%VISCOSA\r\nLAVAR A MANO , CON AGUA FRIA.\r\n\r\n\r\nCOMPOSICIÓN: ALGODÓN  - POLIAMIDA - ANGORA\r\nLAVAR A MANO CON AGUA FRÍA Y JABÓN NEUTRO. SECAR EN PLANO.",
+    "briefDescription": "COMPOSICION: 50% ACRILICO - 30% LANA SHETLAND - 20%VISCOSALAVAR A MANO , CON AGUA FRIA.COMPOSICIÓN: ALGODÓN  - POLIAMIDA - ANGORALAVAR A MANO CON AGUA FRÍA Y JABÓN NEUTRO. SECAR EN PLANO.",
+    "expected": {
+      "trafficLight": "UNKNOWN",
+      "naturalPercentage": 30,
+      "semiSyntheticPercentage": 20,
+      "syntheticPercentage": 50
+    }
+  }
+]

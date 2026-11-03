@@ -177,10 +177,14 @@ export class WanamaScraperAdapter implements StoreScraperAdapter {
         .trim();
     }
 
+    // POW's brief is an alternative summary, often truncated mid-composition.
+    // Prefer the primary even when it lacks percentages; never merge the two.
+    const primaryDescription = item.description?.trim() ? item.description : null;
+    const selectedDescription = primaryDescription
+      ?? (item.brief_description?.trim() ? item.brief_description : null);
     const description = [
       panelText ? `Composición: ${panelText}` : null,
-      item.description,
-      item.brief_description,
+      selectedDescription,
     ]
       .filter(Boolean)
       .join('\n');
