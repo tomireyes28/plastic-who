@@ -232,6 +232,7 @@ export function CatalogExplorer({
         >
           <button
             type="button"
+            aria-pressed={mode === 'brand'}
             onClick={() => setMode('brand')}
             className={`font-label cursor-pointer py-2.5 text-xs font-bold tracking-wider uppercase transition-colors ${
               mode === 'brand'
@@ -243,6 +244,7 @@ export function CatalogExplorer({
           </button>
           <button
             type="button"
+            aria-pressed={mode === 'material'}
             onClick={() => setMode('material')}
             className={`font-label cursor-pointer py-2.5 text-xs font-bold tracking-wider uppercase transition-colors ${
               mode === 'material'
@@ -254,6 +256,7 @@ export function CatalogExplorer({
           </button>
           <button
             type="button"
+            aria-pressed={mode === 'guide'}
             onClick={() => setMode('guide')}
             className={`font-label cursor-pointer py-2.5 text-xs font-bold tracking-wider uppercase transition-colors ${
               mode === 'guide'
@@ -282,6 +285,7 @@ export function CatalogExplorer({
                 <div className="mt-2.5 flex flex-wrap gap-2">
                   <button
                     type="button"
+                    aria-pressed={selectedBrand === 'ALL'}
                     onClick={() => {
                       setSelectedBrand('ALL');
                       setVisibleCount(36);
@@ -299,6 +303,7 @@ export function CatalogExplorer({
                     return (
                       <button
                         key={b.id}
+                        aria-pressed={active}
                         type="button"
                         onClick={() => {
                           setSelectedBrand(b.slug);
@@ -328,6 +333,7 @@ export function CatalogExplorer({
                     return (
                       <button
                         key={mat.key}
+                        aria-pressed={active}
                         type="button"
                         onClick={() => {
                           setSelectedMaterial(mat.key);
@@ -413,6 +419,7 @@ export function CatalogExplorer({
                   ).map((opt) => (
                     <button
                       key={opt.id}
+                      aria-pressed={selectedLight === opt.id}
                       type="button"
                       onClick={() => {
                         setSelectedLight(opt.id);
@@ -493,6 +500,7 @@ export function CatalogExplorer({
                     {initialBrands.find((b) => b.slug === selectedBrand)?.name}
                     <button
                       type="button"
+                      aria-label="Quitar filtro de tienda"
                       onClick={() => setSelectedBrand('ALL')}
                       className="cursor-pointer font-bold hover:text-[#c48b28]"
                     >
@@ -505,6 +513,7 @@ export function CatalogExplorer({
                     Semáforo: {selectedLight}
                     <button
                       type="button"
+                      aria-label="Quitar filtro de semáforo"
                       onClick={() => setSelectedLight('ALL')}
                       className="cursor-pointer font-bold hover:text-[#c48b28]"
                     >
@@ -517,6 +526,7 @@ export function CatalogExplorer({
                     Tipo: {selectedCategory}
                     <button
                       type="button"
+                      aria-label="Quitar filtro de tipo de prenda"
                       onClick={() => setSelectedCategory('TODAS')}
                       className="cursor-pointer font-bold hover:text-[#c48b28]"
                     >
@@ -529,6 +539,7 @@ export function CatalogExplorer({
                     &ldquo;{searchQuery}&rdquo;
                     <button
                       type="button"
+                      aria-label="Quitar búsqueda"
                       onClick={() => setSearchQuery('')}
                       className="cursor-pointer font-bold hover:text-[#c48b28]"
                     >

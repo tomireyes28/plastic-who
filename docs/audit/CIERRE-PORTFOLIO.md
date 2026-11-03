@@ -12,7 +12,7 @@ Este registro distingue correcciones locales de operaciones pendientes. No equiv
 | H09 | Pendiente: comprobar dependencias actuales |
 | H10/H11 | Pendiente: límites operativos y frescura |
 | H21 | Corregido: tarjetas con quiebre de palabras y distribución adaptable; paneles limitados a 100dvh con scroll interno. Verificado con fixtures largos a 320/375/390 px y 667×300: sin scroll horizontal, cierre en y=33 y ambos paneles dentro del viewport. Tipos correctos; teclado virtual físico no probado |
-| H22 | Pendiente: teclado y foco de modales |
+| H22 | Corregido: diálogo nativo con título asociado, fondo inerte, foco inicial en cierre, ciclo Tab/Shift+Tab, Escape y restauración al disparador. Filtros con aria-pressed y acciones de quitar con nombre. Verificado en ambos modales con navegador y fixtures, incluido 390×844; tipos correctos. Evidencia local: previews/H22-modal-mobile.png |
 | Publicación | Pendiente: respaldo, autorización de datos, despliegue y recorrido final |
 
 Los textos públicos de fuente y las simulaciones no autorizan automáticamente ninguna escritura en producción. Los casos sin evidencia suficiente pueden conservar UNKNOWN o excluirse con una decisión explícita de alcance.

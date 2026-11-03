@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { ModalShell } from './ModalShell';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface ContactModalProps {
 }
 
 export function ContactModal({ isOpen, onClose }: ContactModalProps) {
+  const titleId = useId();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [reason, setReason] = useState('Sugerir una tienda');
@@ -57,12 +59,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#191c18]/60 p-4 backdrop-blur-xs"
-      onClick={handleReset}
-    >
+    <ModalShell isOpen={isOpen} onClose={handleReset} titleId={titleId}>
       <div
         className="garment-tag-border relative max-h-[calc(100dvh-2rem)] min-w-0 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] w-full max-w-lg border-2 border-[#191c18] bg-[#fbf9f5] p-6 shadow-2xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
@@ -86,7 +83,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#2b593f]/10 text-2xl text-[#2b593f]">
               ✓
             </div>
-            <h3 className="font-editorial mt-3 text-2xl font-bold text-[#191c18]">
+            <h3 id={titleId} className="font-editorial mt-3 text-2xl font-bold text-[#191c18]">
               ¡Gracias por escribirnos!
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-[#494c45]">
@@ -103,7 +100,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
           </div>
         ) : (
           <>
-            <h2 className="font-editorial mt-1 pr-8 text-2xl font-bold text-[#191c18]">
+            <h2 id={titleId} className="font-editorial mt-1 pr-8 text-2xl font-bold text-[#191c18]">
               Sugerir una tienda o prenda
             </h2>
             <p className="mt-1.5 text-xs leading-relaxed text-[#5a5d55]">
@@ -220,6 +217,6 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
           </>
         )}
       </div>
-    </div>
+    </ModalShell>
   );
 }

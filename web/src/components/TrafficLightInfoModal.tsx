@@ -1,5 +1,8 @@
 'use client';
 
+import { useId } from 'react';
+import { ModalShell } from './ModalShell';
+
 interface TrafficLightInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,15 +12,11 @@ export function TrafficLightInfoModal({
   isOpen,
   onClose,
 }: TrafficLightInfoModalProps) {
+  const titleId = useId();
   if (!isOpen) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#191c18]/60 p-4 backdrop-blur-xs"
-      onClick={onClose}
-    >
+    <ModalShell isOpen={isOpen} onClose={onClose} titleId={titleId}>
       <div
         className="garment-tag-border relative max-h-[calc(100dvh-2rem)] min-w-0 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] w-full max-w-xl border-2 border-[#191c18] bg-[#fbf9f5] p-6 shadow-2xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
@@ -35,7 +34,7 @@ export function TrafficLightInfoModal({
           Plastic Who? · Criterio de Auditoría
         </span>
 
-        <h2 className="font-editorial mt-1 pr-8 text-2xl font-bold text-[#191c18] sm:text-3xl">
+        <h2 id={titleId} className="font-editorial mt-1 pr-8 text-2xl font-bold text-[#191c18] sm:text-3xl">
           ¿Cómo puntuamos las prendas?
         </h2>
         <p className="mt-2 text-xs leading-relaxed text-[#5a5d55]">
@@ -122,6 +121,6 @@ export function TrafficLightInfoModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }
