@@ -15,7 +15,7 @@ la propuesta de 752 registros y crear la tabla de cuota del contacto.
 - **752 productos actualizados; 4.662 productos validados.**
 - Verificación independiente posterior mediante transacción de solo lectura:
   nombres, precios, stock, estados activos, campos de marca y demás campos ajenos
-  a composición/descrición/fecha técnica de actualización conservan sus valores.
+  a composición/descripción/fecha técnica de actualización conservan sus valores.
 - Resultado: **1.223 verdes, 806 amarillos, 622 rojos y 2.011 sin clasificar**.
   Cero totales inválidos. Los casos pendientes conservan UNKNOWN; no se afirma
   haber resuelto todos sus formatos ni identificado los materiales ambiguos.

@@ -1,4 +1,5 @@
--- Reviewed additive operation for the existing database. NOT executed by this change.
+-- Reviewed additive operation, applied on 2026-11-03 with explicit user approval.
+-- Not executed automatically at build or startup. Do not reapply to that database.
 -- Do not reset the database or use db push to establish a migration baseline.
 BEGIN;
 CREATE TABLE "ContactQuota" (
@@ -7,6 +8,8 @@ CREATE TABLE "ContactQuota" (
   "expiresAt" TIMESTAMP(3) NOT NULL
 );
 CREATE INDEX "ContactQuota_expiresAt_idx" ON "ContactQuota" ("expiresAt");
+ALTER TABLE "ContactQuota" ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON "ContactQuota" FROM PUBLIC;
 COMMIT;
 -- Optional maintenance after deployment: expired buckets may be deleted. No messages,
 -- names, IP addresses or email addresses are stored in this table.
