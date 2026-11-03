@@ -181,18 +181,11 @@ export class OnePlaceWorldScraperAdapter implements StoreScraperAdapter {
         }
       }
 
-      // Determinar composición técnica:
-      // Si es parte de su línea de bambú (mencionada en título, slug o categoría),
-      // su ficha técnica oficial especifica: 96% bambú y 4% elastano.
-      const isBambooLine =
-        /bamb[uú]/i.test(name) ||
-        /bamb[uú]/i.test(url) ||
-        html.includes('LINEA DE BAMBÚ') ||
-        html.includes('LINEA\\u0020DE\\u0020BAMB\\u00DA');
-
-      const description = isBambooLine
-        ? 'Línea de Bambú One Place World.\nComposición: 96% bambú y 4% elastano.\nTela hipoalergénica, antibacteriana y transpirable.'
-        : 'Indumentaria técnica One Place World.';
+      // Preserve the product's declaration; names and collection labels are not evidence.
+      const descMatch = html.match(
+        /<div[^>]*class=["'][^"']*(?:js-product-description|product-description-content|user-content)[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+      );
+      const description = descMatch?.[1] || getMeta('og:description') || '';
 
       const slugMatch = url.match(/\/productos\/([^/]+)\/?$/);
       const slug = slugMatch ? slugMatch[1] : name.toLowerCase().replace(/[^a-z0-9]+/g, '-');

@@ -213,35 +213,6 @@ export class FunkyMonkeysScraperAdapter implements StoreScraperAdapter {
       );
       const cleanDesc = descMatch ? decodeHtmlEntities(descMatch[1]) : '';
 
-      // Extracción y estandarización de composición:
-      let finalDescription = cleanDesc;
-      const lower = cleanDesc.toLowerCase();
-
-      if (
-        lower.includes('100% en algodón') ||
-        lower.includes('algodón 100%') ||
-        lower.includes('100% algodón') ||
-        lower.includes('100% algodon') ||
-        lower.includes('algodon 100%')
-      ) {
-        if (!/composici[oó]n/i.test(finalDescription)) {
-          finalDescription = `${cleanDesc}\nComposición: 100% algodón.`;
-        }
-      } else if (
-        lower.includes('100% viscosa') ||
-        lower.includes('100% en viscosa') ||
-        lower.includes('viscosa 100%')
-      ) {
-        if (!/composici[oó]n/i.test(finalDescription)) {
-          finalDescription = `${cleanDesc}\nComposición: 100% viscosa.`;
-        }
-      } else if (
-        lower.includes('rompevientos') &&
-        lower.includes('jersey de algodón')
-      ) {
-        finalDescription = `${cleanDesc}\nExterior: 100% poliéster. Forrería: 100% algodón.`;
-      }
-
       const slugMatch = url.match(/\/productos\/([^/]+)\/?$/);
       const slug = slugMatch
         ? slugMatch[1]
@@ -256,7 +227,7 @@ export class FunkyMonkeysScraperAdapter implements StoreScraperAdapter {
         price: price && Number.isFinite(price) ? price : null,
         specialPrice: null,
         category,
-        description: finalDescription || cleanDesc || 'Indumentaria infantil Funky Monkeys.',
+        description: cleanDesc,
         inStock: !isOutOfStock,
       };
     } catch (error) {

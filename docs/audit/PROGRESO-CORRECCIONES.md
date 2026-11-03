@@ -9,3 +9,10 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Conservados los comandos de scraping y el workflow, usando un contexto exclusivo para el CLI.
 - Verificación: solicitudes HTTP a ambas rutas anteriores devuelven 404, las rutas de lectura siguen disponibles, el arranque público no hace upserts y el contexto CLI se inicializa con persistencia simulada.
 - Pendiente operativo: desplegar la nueva versión. No se ejecutó scraping ni se escribieron datos reales durante esta corrección.
+
+## H02 — Composición basada en la fuente
+
+- Eliminadas las composiciones generadas por nombres, colecciones o tipos de tejido en One Place World, Reír Enloquecer y Funky Monkeys.
+- One Place World ahora conserva la descripción del producto o, como alternativa, su metadata de descripción.
+- Pruebas con HTML simulado verifican ausencia de porcentajes inventados y conservación de mezclas explícitas en las tres marcas.
+- Pendiente: los registros históricos no cambian con este commit; su revisión/reprocesamiento corresponde a H06. La pérdida de secciones del parser se aborda separadamente en H04.

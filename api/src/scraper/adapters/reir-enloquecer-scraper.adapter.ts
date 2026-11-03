@@ -207,24 +207,6 @@ export class ReirEnloquecerScraperAdapter implements StoreScraperAdapter {
       }
       const descriptionText = decodeHtmlEntities(rawDescription);
 
-      // Composición:
-      // Reír Enloquecer confecciona casi todo su catálogo en gabardina 100% algodón o denim 100% algodón.
-      // Si es Blusa o Pantalón Ipanema forman conjunto en gabardina 100% algodón.
-      const isIpanema = /ipanema/i.test(url) || /ipanema/i.test(name);
-      const hasCottonExplicit =
-        /100%\s*algod[oó]n|100%\s*denim|100%\s*gabardina|gabardina\s*de\s*algod[oó]n|poplin\s*de\s*algod[oó]n|tela\s*de\s*algod[oó]n|confeccionad[oa]\s*en\s*algod[oó]n/i.test(
-          descriptionText,
-        ) || isIpanema;
-
-      let finalDescription = descriptionText;
-      if (hasCottonExplicit) {
-        if (!/composici[oó]n/i.test(descriptionText)) {
-          finalDescription = `${descriptionText}\nComposición: 100% algodón.`;
-        }
-      } else if (/microtul/i.test(descriptionText)) {
-        finalDescription = `${descriptionText}\nComposición: 100% poliéster (microtul).`;
-      }
-
       const slugMatch = url.match(/\/productos\/([^/]+)\/?$/);
       const slug = slugMatch
         ? slugMatch[1]
@@ -239,7 +221,7 @@ export class ReirEnloquecerScraperAdapter implements StoreScraperAdapter {
         price: price && Number.isFinite(price) ? price : null,
         specialPrice: null,
         category,
-        description: finalDescription,
+        description: descriptionText,
         inStock: !isOutOfStock,
       };
     } catch (error) {
