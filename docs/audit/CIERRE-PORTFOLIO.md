@@ -1,0 +1,17 @@
+# Cierre de la primera versión de portfolio
+
+Este registro distingue correcciones locales de operaciones pendientes. No equivale a una auditoría de seguridad completa ni acredita un despliegue.
+
+| Área | Estado |
+|---|---|
+| H01–H05, H07 | Corregidos en código; despliegue pendiente |
+| H06 | Criterio conservador de bambú/microfibra aprobado e integrado; propuesta final y aplicación controlada pendientes |
+| H13 | Validación estricta de tipos, tamaños, email y motivo; rechazo de inyección en cabeceras; escape de HTML. 28 pruebas web pasan, sin correo real |
+| H14 | Pendiente: confirmación honesta de envío |
+| H08 | Pendiente: límites de consumo del contacto |
+| H09 | Pendiente: comprobar dependencias actuales |
+| H10/H11 | Pendiente: límites operativos y frescura |
+| H21/H22 | Pendiente: móvil, teclado y modales |
+| Publicación | Pendiente: respaldo, autorización de datos, despliegue y recorrido final |
+
+Los textos públicos de fuente y las simulaciones no autorizan automáticamente ninguna escritura en producción. Los casos sin evidencia suficiente pueden conservar UNKNOWN o excluirse con una decisión explícita de alcance.

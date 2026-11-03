@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { escapeContactHtml, parseContact } from '../../../lib/contact';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, reason, message } = body;
-
-    if (!name || !email || !message) {
+    const parsed = parseContact(body);
+    if (!parsed) {
       return NextResponse.json(
-        { error: 'Por favor completá nombre, email y mensaje.' },
+        { error: 'Revisá los campos: nombre de hasta 100 caracteres, email válido y mensaje de hasta 4000 caracteres.' },
         { status: 400 },
       );
     }
+    const { name, email, reason, message } = parsed;
+    const safeName = escapeContactHtml(name), safeEmail = escapeContactHtml(email);
+    const safeReason = escapeContactHtml(reason), safeMessage = escapeContactHtml(message);
 
     const recipient = process.env.CONTACT_EMAIL || 'info@plasticwho.com';
     const emailSubject = `[Plastic Who? Feedback] ${reason || 'Nuevo mensaje'} - ${name}`;
@@ -42,16 +45,16 @@ Enviado el: ${new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
           <tr>
             <td style="padding: 6px 0; font-weight: bold; width: 120px; color: #5a5d55;">De:</td>
-            <td style="padding: 6px 0; color: #191c18;">${name} (&lt;<a href="mailto:${email}">${email}</a>&gt;)</td>
+            <td style="padding: 6px 0; color: #191c18;">${safeName} (&lt;<a href="mailto:${safeEmail}">${safeEmail}</a>&gt;)</td>
           </tr>
           <tr>
             <td style="padding: 6px 0; font-weight: bold; color: #5a5d55;">Motivo:</td>
-            <td style="padding: 6px 0; color: #191c18;">${reason || 'General'}</td>
+            <td style="padding: 6px 0; color: #191c18;">${safeReason}</td>
           </tr>
         </table>
 
         <div style="background: #f3efe6; border-left: 4px solid #2b593f; padding: 16px; margin: 16px 0; font-size: 15px; line-height: 1.6; color: #191c18; white-space: pre-wrap;">
-${message}
+${safeMessage}
         </div>
 
         <p style="font-size: 12px; color: #8c887e; margin-top: 24px; border-top: 1px dashed #cfc6b4; padding-top: 12px;">
