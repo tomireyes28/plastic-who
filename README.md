@@ -1,7 +1,7 @@
 # Plastic Who? (Trama) 🧶
 
 > **Plataforma de Auditoría Textil y Detección de Fibras Sintéticas en la Moda Argentina.**  
-> Transparencia algorítmica para saber de qué está hecha realmente la ropa, más allá del marketing.
+> Archivo de composiciones declaradas en fichas públicas de tiendas argentinas, con reglas explícitas y reconocimiento de información insuficiente.
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-11.0-E0234E?style=flat-square&logo=nestjs)](https://nestjs.com/)
@@ -15,11 +15,14 @@
 
 ## 📌 El Problema y la Misión
 
-En la industria de la moda actual, el *greenwashing* y el etiquetado ambiguo son habituales: prendas promocionadas como *"Lino"* o *"Soft Touch"* contienen frecuentemente más de un 80% de poliéster o acrílico (plásticos derivados del petróleo que liberan microplásticos en cada lavado).
+Comparar composiciones entre tiendas exige leer formatos, nombres y mezclas diferentes. Una descripción comercial o el nombre de un tejido no bastan para establecer sus porcentajes.
 
-**Plastic Who?** resuelve esto auditando directamente la etiqueta interna obligatoria de las prendas en las principales tiendas argentinas. A través de scrapers automatizados y un motor de procesamiento de lenguaje natural (NLP/Regex), clasifica objetivamente cada prenda mediante un semáforo textil de pureza material.
+**Plastic Who?** extrae las declaraciones publicadas en fichas de productos y las analiza mediante un parser determinista de reglas y expresiones regulares. El semáforo sigue una política propia sobre composición. No inspecciona prendas físicas ni certifica salud, calidad o impacto ambiental; la información ausente, ambigua o contradictoria puede permanecer sin clasificar.
 
-Actualmente indexa y audita **más de 4.600 prendas reales** de marcas líderes como Wanama, Paula Cahen D'Anvers, Portsaid, Desiderata, Rapsodia, Kosiuko, Funky Monkeys, India Style, entre otras.
+La fotografía revisada del 3 de noviembre de 2026 contiene **4.662 productos** de tiendas como Wanama, Paula Cahen D'Anvers, Portsaid, Desiderata, Rapsodia, Kosiuko, Funky Monkeys e India Style. Incluye accesorios y categorías originales de las tiendas. Es un archivo de consultas parciales, con precios y stock que deben confirmarse en la fuente.
+
+Estado de publicación y límites aceptados: [cierre de portfolio](docs/audit/CIERRE-PORTFOLIO.md).
+La reparación histórica está preparada como [propuesta revisable](docs/audit/H06-PROPUESTA-CONSERVADORA-FINAL.md); los commits locales no significan que la base real ni el despliegue ya estén corregidos.
 
 ---
 
@@ -30,13 +33,13 @@ El proyecto está diseñado como un **Monorepo TypeScript** dividido en responsa
 ```
 plastic-who/
 ├── api/                  # Backend REST & Pipeline de Scraping (NestJS + Prisma + PostgreSQL)
-│   ├── src/composition/  # Tokenizer NLP, diccionario canónico y motor de semáforo
+│   ├── src/composition/  # Parser determinista, diccionario y motor de semáforo
 │   ├── src/scraper/      # Scrapers modulares desacoplados (POW, VTEX, sitemaps, JSON-LD)
 │   └── src/catalog/      # Endpoints REST de marcas, productos y métricas
-├── web/                  # Frontend Web / PWA (Next.js 15 App Router + Tailwind CSS)
+├── web/                  # Frontend Web (Next.js 15 App Router + Tailwind CSS)
 │   ├── src/app/          # Rutas, metadata SEO, Server Components
 │   └── src/components/   # Explorador interactivo, fichas con WeaveBar, modales técnicos
-├── shared/               # Tipos, interfaces y enums compartidos entre cliente y servidor
+├── shared/               # Contratos disponibles; integración parcial entre API y web
 └── scratch/              # Scripts de auditoría y utilidades de base de datos
 ```
 
@@ -47,7 +50,7 @@ flowchart TD
     C -->|"Diccionario Canónico & Filtro de Secciones"| D["TrafficLightService"]
     D -->|"Normalización estricta (0-100%)"| E[("PostgreSQL / Supabase (Prisma)")]
     E -->|"Server Components / Cache"| F["Next.js 15 Web Client"]
-    F -->|"Filtros en memoria (useMemo)"| G["UI Editorial / WeaveBar / PWA"]
+    F -->|"Filtros en memoria (useMemo)"| G["UI Editorial / WeaveBar"]
 ```
 
 ---
@@ -92,7 +95,7 @@ siendo una fibra sintética; la tolerancia del 5% no se limita a él. Referencia
 - **Next.js 15 con App Router:** Carga inicial ultrarrápida mediante Server Components que consultan directamente la base de datos sin sobrecosto de roundtrips HTTP innecesarios.
 - **Explorador Instantáneo con `useMemo`:** Filtros reactivos por marca, material (algodón, lino, viscosa, etc.), categoría y semáforo sobre miles de prendas sin lag perceptible ni consultas lentas a servidor.
 - **WeaveBar Component:** Representación gráfica proporcional tipo trama textil para visualizar inmediatamente la distribución de fibras.
-- **PWA Ready:** Manifest web y metadatos SEO/OpenGraph completos optimizados para compartir en redes sociales y móviles.
+- **Manifest básico:** metadatos de aplicación; no incluye funcionamiento offline ni garantiza instalación como PWA. SEO y recursos sociales completos quedan como mejora de presentación.
 
 ---
 
@@ -104,7 +107,7 @@ siendo una fibra sintética; la tolerancia del 5% no se limita a él. Referencia
 | **Backend** | NestJS 11, TypeScript, RxJS, Node.js |
 | **Base de Datos & ORM** | PostgreSQL (Supabase), Prisma ORM 6 |
 | **Scraping & Parsing** | Fetch API nativo, Cheerio, Regex Tokens, JSON-LD Schema.org |
-| **Testing** | Jest, Ts-Jest (100% pasando) |
+| **Testing** | Jest y Ts-Jest; regresiones del dominio y recorridos con fixtures |
 | **Arquitectura** | Monorepo npm workspaces |
 
 ---
