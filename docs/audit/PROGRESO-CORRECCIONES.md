@@ -90,6 +90,15 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Agregadas 45 pruebas, incluidas las 17 variantes de párrafo de las fuentes guardadas y controles negativos. Verificación: 256 pruebas del backend aprobadas y build de API correcto. Comprobación adicional sin red sobre las 39 descripciones completas guardadas: todas reproducen 100% algodón como una sola fibra y verde.
 - No se consultó ni escribió la base, no se consultaron tiendas y no se reescribieron vistas previas. Pendiente desplegar y regenerar la propuesta definitiva con las nuevas huellas antes de aplicar el histórico de H06.
 
+### H06 — Vista previa regenerada con las tres integraciones
+
+- Nueva lectura exclusivamente de consulta: los 4.662 productos conservan entradas y valores anteriores de la revisión previa. El CLI sobre texto almacenado propone 649 diferencias; no incorpora automáticamente las fuentes recuperadas.
+- Reproducción sin red de 831 capturas guardadas con el código actual: 806 con identidad coincidente, 24 no disponibles y una extracción/identidad pendiente. Los 89 casos de las tres integraciones reproducen 85 clasificaciones y cuatro UNKNOWN.
+- La propuesta acumulada conserva 613 diferencias de análisis y 302 cambios de color frente a la base; ningún color cambia respecto de la revisión anterior. Hay 65 cambios únicamente de texto extraído. Cero excesos propuestos y cero filas aprobadas.
+- De 339 declaraciones clasificables revisadas, 193 se reproducen con el código y 146 todavía requieren selección/transcripción (86 Funky Monkeys, 28 Reír Enloquecer y 32 One Place World). Las decisiones de bambú y microfibra siguen pendientes. Otros nueve candidatos difieren en extracción parcial y permanecen UNKNOWN; se separaron para revisión.
+- Continúan 180 alertas históricas y 303 pendientes de propuestas calculadas, con las superposiciones explicadas en el reporte. No se aplicaron cambios ni se desplegó código. Build de API correcto; sin cambios productivos ni nueva ejecución de pruebas en este paso.
+- Estado vigente, artefactos y criterios de cierre: `docs/audit/VISTA-PREVIA-H06-CORRECCIONES-INTEGRADAS.md`. Los párrafos anteriores registran fotografías históricas; esta actualización es la referencia actual.
+
 ## H07 — Catálogo dinámico, sin fallback implícito
 
 - La portada ahora se renderiza por solicitud. No congela consultas Prisma en el build; la siguiente carga o recarga vuelve a leer la fuente.

@@ -1,5 +1,7 @@
 # H06 — Contraste de las 464 propuestas calculadas
 
+> Estado histórico. Las tres correcciones ya se integraron y la propuesta se regeneró: ver [vista previa con correcciones integradas](VISTA-PREVIA-H06-CORRECCIONES-INTEGRADAS.md). Las menciones de integración pendiente de esos tres cambios describen el estado al producir este reporte.
+
 Actualización del 3 de noviembre de 2026. **No se consultó ni modificó la base. Ninguna fila está aprobada para aplicar.** Se consultaron únicamente las fichas públicas de los productos, guardando nuevas capturas locales: 441 respuestas HTTP 200 y 23 HTTP 404.
 
 Se empezó por 43 prioridades —23 pérdidas de clasificación y 20 totales inválidos, sin superposición— y se extendió el contraste a las 464. La revisión detallada de los prioritarios se complementó con comprobaciones acotadas de identidad, campos del producto, partes y cantidades para el resto. Los casos no concluyentes quedan identificados; no se consideran correctos solo por responder HTTP 200 o sumar 100%.
