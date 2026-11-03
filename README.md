@@ -57,6 +57,7 @@ flowchart TD
 ### 1. Motor de Tokenización Textil y Normalización de Datos Sucios
 Las fichas técnicas en e-commerce tienen formatos sumamente heterogéneos y con frecuencia errores de carga:
 - Variantes ortográficas y modismos (*"algodón pima"*, *"spandex"*, *"viscosa bambú"*, *"polyester reciclado"*).
+- «Bambú» sin proceso identificado y «microfibra» sin material identificado se conservan sin clasificar. Una declaración explícita de viscosa de bambú o microfibra de poliéster sí permite identificar esa fibra; el nombre comercial por sí solo no aporta esa evidencia.
 - Menciones repetidas por partes de confección (ej. `Composición: 100% ALGODÓN - RIBB: 100% ALGODÓN`, donde el ribete del cuello no debe inflar el cálculo al 200%).
 - Duplicaciones de bloques en CMS (ej. Portsaid con textos de tela base clonados).
 - Forrerías sin dos puntos o con guiones (`FORRO-LINING: 100% poliéster`, `Viso: 100% poliéster`).

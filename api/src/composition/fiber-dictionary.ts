@@ -66,11 +66,6 @@ export const FIBER_DICTIONARY: FiberDefinition[] = [
     category: 'NATURAL',
     synonyms: ['yute', 'jute'],
   },
-  {
-    canonicalName: 'bambú',
-    category: 'NATURAL',
-    synonyms: ['fibra de bambu', 'fibra de bambú', 'bambu', 'bambú'],
-  },
 
   // ========================
   // FIBRAS SEMISINTÉTICAS (Celulósicas regeneradas)
@@ -81,6 +76,8 @@ export const FIBER_DICTIONARY: FiberDefinition[] = [
     synonyms: [
       'viscosa de bambu',
       'viscosa de bambú',
+      'viscosa bambu',
+      'viscosa bambú',
       'rayon viscosa',
       'rayón viscosa',
       'viscosa',
@@ -117,7 +114,8 @@ export const FIBER_DICTIONARY: FiberDefinition[] = [
       'poliester',
       'poliéster',
       'polyester',
-      'microfibra',
+      'microfibra de poliester',
+      'microfibra de poliéster',
     ],
   },
   {

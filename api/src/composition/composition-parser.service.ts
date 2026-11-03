@@ -280,6 +280,9 @@ export class CompositionParserService {
       (remaining, token) => remaining.slice(0, token.start) + ' '.repeat(token.end - token.start) + remaining.slice(token.end),
       text,
     );
+    // Neither generic label identifies a material/process. Explicit compound aliases
+    // (e.g. bamboo viscose or polyester microfiber) have already been consumed.
+    covered = covered && !/\b(?:bambu|microfibra)\b/.test(residue);
     if (reviewedConstruction) {
       const additionalFiber = /\b(?:otras?\s+fibras?|fibras?\s+(?:desconocid\w*|no\s+identificad\w*))\b/.test(residue);
       // Only the reviewed commercial introduction can be omitted from coverage checks.

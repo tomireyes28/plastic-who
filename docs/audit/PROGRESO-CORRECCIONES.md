@@ -122,6 +122,12 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 
 ## H07 — Catálogo dinámico, sin fallback implícito
 
+### Decisión H06 — Bambú y microfibra sin identificar
+
+- El usuario aprobó conservar sin clasificar el bambú sin proceso identificado y la microfibra sin material identificado. Se retiraron sus asociaciones automáticas a natural/poliéster, manteniendo el texto original y las cantidades identificables de otras fibras.
+- Las expresiones explícitas «viscosa de bambú», «viscosa bambú» y «microfibra de poliéster» siguen identificando su material. Pruebas cubren declaraciones incompletas, mezclas, forro y texto sin cantidades del material ambiguo.
+- Las 32 etiquetas visuales de One Place World no justifican verde por decir bambú: deben conservarse como evidencia visual pendiente de un procedimiento reproducible, o publicarse sin clasificación. No se ejecutó ninguna escritura real.
+
 - La portada ahora se renderiza por solicitud. No congela consultas Prisma en el build; la siguiente carga o recarga vuelve a leer la fuente.
 - Eliminado el reemplazo automático por productos y marcas de ejemplo ante errores o respuestas vacías. Demo es un modo explícito (`CATALOG_MODE=demo`) con aviso visible.
 - La caída de la fuente produce un error genérico y una acción de reintento mediante nueva navegación. Los detalles privados del proveedor no se incluyen en el error público. Una fuente vacía tiene una pantalla propia.
