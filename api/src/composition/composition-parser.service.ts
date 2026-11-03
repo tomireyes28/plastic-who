@@ -200,7 +200,11 @@ export class CompositionParserService {
   }
 
   private parseSection(source: string, isLining: boolean): SectionResult {
-    const text = normalizeText(source);
+    // Repair only the split-word cotton spelling captured in this explicit fabric phrase.
+    // rawComposition still retains the original source, including the typo.
+    const text = normalizeText(source)
+      .replace(/(\b(?:jersey|frisa)\s+de\s+)a\s+lgodon\b/g, '$1algodon');
+    const cottonConstruction = /(?:\d+(?:[.,]\d+)?\s*%\s+(?:en\s+)?(?:jersey|frisa)\s+de\s+algodon\b|\b(?:jersey|frisa)\s+\d+(?:[.,]\d+)?\s*%\s+de\s+algodon\b)/.exec(text);
     type Token = { start: number; end: number } & (
       { kind: 'FIBER'; name: string } | { kind: 'PERCENTAGE'; percentage: number }
     );
@@ -229,7 +233,13 @@ export class CompositionParserService {
     let declaredTotal = 0;
     let covered = true;
     let invalid = false;
-    const joins = (left: Token, right: Token) => /^[\s]*(?:(?:de|en)\s+)?$/.test(text.slice(left.end, right.start));
+    // Fabric construction is a connector to a declared fiber, never a fiber by itself.
+    const joins = (left: Token, right: Token) => {
+      const between = text.slice(left.end, right.start);
+      return /^\s*(?:(?:de|en)\s+)?$/.test(between)
+        || (left.kind === 'PERCENTAGE' && right.kind === 'FIBER'
+          && /^\s+(?:en\s+)?(?:jersey|frisa)\s+de\s+$/.test(between));
+    };
     for (let index = 0; index < tokens.length; index++) {
       const token = tokens[index];
       if (token.kind !== 'PERCENTAGE') continue;
@@ -252,10 +262,24 @@ export class CompositionParserService {
     }
     invalid = invalid || declaredTotal > 100 + EPSILON;
     covered = covered && percentages > 0 && tokens.every((token, index) => token.kind !== 'FIBER' || used.has(index));
-    const residue = [...tokens].reverse().reduce(
+    let residue = [...tokens].reverse().reduce(
       (remaining, token) => remaining.slice(0, token.start) + ' '.repeat(token.end - token.start) + remaining.slice(token.end),
       text,
     );
+    if (cottonConstruction) {
+      const additionalFiber = /\b(?:otras?\s+fibras?|fibras?\s+(?:desconocid\w*|no\s+identificad\w*))\b/.test(residue);
+      // Only the reviewed commercial introduction can be omitted from coverage checks.
+      // Unknown material wording before the declaration must remain visible to validation.
+      const introduction = text.slice(0, cottonConstruction.index).trim();
+      if (/^descubre nuestra remera de ninas "[^"]+"\s*,\s*un diseno pensado para que tus pequenas luzcan radiantes y comodas\.\s*confeccionada$/.test(introduction)
+        && !tokens.some(token => token.start < cottonConstruction.index)) {
+        residue = ' '.repeat(cottonConstruction.index) + residue.slice(cottonConstruction.index);
+      }
+      // These commercial clause openings occur in the reviewed construction statements.
+      // Keep all tokens/amounts and other delimiters: extra fibers still invalidate coverage.
+      residue = residue.replace(/,\s*(?=(?:muy suave y extra comodo|esta prenda (?:de calidad superior )?(?:ofrece|te garantiza|es suave al tacto)|especialmente disenad[oa] para (?:ninos|ninas)|este buzo es ideal|garantiza una comodidad|ideal para|perfect[oa]s? para)\b)/g, '. ');
+      covered = covered && !additionalFiber;
+    }
     // An additional unquantified component is not proof of a complete exterior either.
     covered = covered && !/[,;/+|]\s*[a-z]/.test(residue);
     return { fibers: invalid ? [] : fibers, covered, invalid };

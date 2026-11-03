@@ -82,6 +82,14 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Verificación: 211 pruebas del backend aprobadas y build de API correcto. Comprobación adicional sobre 27 textos de fuente guardados: 24 reproducen los análisis completos revisados y 3 permanecen UNKNOWN por otros problemas. No se consultaron tiendas ni la base, ni se ejecutó persistencia real.
 - La normalización manual de este alias ya está integrada en código. Falta desplegarla y regenerar la propuesta definitiva con las huellas actualizadas antes de aplicar H06; los escenarios anteriores y el histórico de la base permanecen sin reescribir.
 
+### Integración H06 — Declaraciones de confección en jersey/frisa de algodón
+
+- El parser asocia el porcentaje con la fibra explícita en «100% en jersey de algodón», «100% en frisa de algodón» y las variantes comprobadas de orden. Jersey/frisa funcionan como conectores de confección; no se convierten por sí solos en algodón ni aportan porcentajes ausentes.
+- Las cláusulas comerciales revisadas se distinguen de componentes adicionales mediante patrones acotados. No se descartan otros tokens de fibra/cantidad ni introducciones con materiales desconocidos. Se reconoce la errata capturada «frisa de A lgodón» únicamente en esa construcción; el texto de origen conserva la errata.
+- Conservados controles de cantidades parciales/excesivas, componentes desconocidos, contradicciones, cuidados y separación de exterior/forro. Un forro sin exterior no clasifica la prenda.
+- Agregadas 45 pruebas, incluidas las 17 variantes de párrafo de las fuentes guardadas y controles negativos. Verificación: 256 pruebas del backend aprobadas y build de API correcto. Comprobación adicional sin red sobre las 39 descripciones completas guardadas: todas reproducen 100% algodón como una sola fibra y verde.
+- No se consultó ni escribió la base, no se consultaron tiendas y no se reescribieron vistas previas. Pendiente desplegar y regenerar la propuesta definitiva con las nuevas huellas antes de aplicar el histórico de H06.
+
 ## H07 — Catálogo dinámico, sin fallback implícito
 
 - La portada ahora se renderiza por solicitud. No congela consultas Prisma en el build; la siguiente carga o recarga vuelve a leer la fuente.
