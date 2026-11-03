@@ -27,5 +27,10 @@
     "scrape:kosiuko": "npm run scrape:kosiuko --workspace=plastic-who-api",
     "scrape:47": "npm run scrape:47 --workspace=plastic-who-api",
     "scrape:all": "npm run scrape:all --workspace=plastic-who-api"
+  },
+  "overrides": {
+    "@nestjs/platform-express": {
+      "multer": "^2.5.0"
+    }
   }
 }
