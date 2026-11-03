@@ -19,7 +19,7 @@ export function TrafficLightInfoModal({
       onClick={onClose}
     >
       <div
-        className="garment-tag-border relative w-full max-w-xl border-2 border-[#191c18] bg-[#fbf9f5] p-6 shadow-2xl sm:p-8"
+        className="garment-tag-border relative max-h-[calc(100dvh-2rem)] min-w-0 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] w-full max-w-xl border-2 border-[#191c18] bg-[#fbf9f5] p-6 shadow-2xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -35,7 +35,7 @@ export function TrafficLightInfoModal({
           Plastic Who? · Criterio de Auditoría
         </span>
 
-        <h2 className="font-editorial mt-1 text-2xl font-bold text-[#191c18] sm:text-3xl">
+        <h2 className="font-editorial mt-1 pr-8 text-2xl font-bold text-[#191c18] sm:text-3xl">
           ¿Cómo puntuamos las prendas?
         </h2>
         <p className="mt-2 text-xs leading-relaxed text-[#5a5d55]">
@@ -46,7 +46,7 @@ export function TrafficLightInfoModal({
 
         <div className="mt-5 space-y-3">
           <div className="border-l-4 border-[#2b593f] bg-[#f3efe6] p-3.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-label text-xs font-bold text-[#2b593f] uppercase">
                 🟢 Verde · Fibras Naturales Nobles (≥95%)
               </span>
@@ -62,7 +62,7 @@ export function TrafficLightInfoModal({
           </div>
 
           <div className="border-l-4 border-[#c48b28] bg-[#f3efe6] p-3.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-label text-xs font-bold text-[#8c6014] uppercase">
                 🟡 Amarillo · Mezclas, Celulósicas o Forro
               </span>
@@ -80,7 +80,7 @@ export function TrafficLightInfoModal({
           </div>
 
           <div className="border-l-4 border-[#b33c2e] bg-[#f3efe6] p-3.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-label text-xs font-bold text-[#8a281d] uppercase">
                 🔴 Rojo · Alto Plástico (&lt;70% Natural)
               </span>
@@ -96,7 +96,7 @@ export function TrafficLightInfoModal({
           </div>
 
           <div className="border-l-4 border-[#8c887e] bg-[#f3efe6] p-3.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-label text-xs font-bold text-[#5a5d55] uppercase">
                 ⚪ Gris · Sin Clasificar
               </span>

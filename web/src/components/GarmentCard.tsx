@@ -54,10 +54,10 @@ export function GarmentCard({ product }: GarmentCardProps) {
   const formattedSpecial = formatArsPrice(product.specialPrice);
 
   return (
-    <article className="garment-tag-border group relative flex flex-col justify-between rounded-none bg-[#fbf9f5] transition-transform duration-200 hover:-translate-y-0.5">
+    <article className="garment-tag-border group relative min-w-0 [overflow-wrap:anywhere] flex flex-col justify-between rounded-none bg-[#fbf9f5] transition-transform duration-200 hover:-translate-y-0.5">
       {/* Cabecera tipo etiqueta cosida con pespunte */}
-      <div className="flex items-center justify-between border-b border-dashed border-[#cfc6b4] px-4 py-2.5">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-[#cfc6b4] px-4 py-2.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <span className="font-label text-[11px] font-bold tracking-widest text-[#191c18] uppercase">
             {product.brand.name}
           </span>
@@ -77,9 +77,9 @@ export function GarmentCard({ product }: GarmentCardProps) {
         </div>
 
         <span
-          className={`font-label inline-flex items-center gap-1.5 border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${stamp.badgeClass}`}
+          className={`font-label inline-flex max-w-full items-center gap-1.5 border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${stamp.badgeClass}`}
         >
-          <span className={`h-2 w-2 rounded-full ${stamp.dotClass}`} />
+          <span className={`h-2 w-2 shrink-0 rounded-full ${stamp.dotClass}`} />
           {stamp.label}
         </span>
       </div>
@@ -105,11 +105,11 @@ export function GarmentCard({ product }: GarmentCardProps) {
 
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div>
-            <div className="flex items-baseline justify-between gap-2">
-              <h3 className="font-editorial text-lg leading-snug font-semibold text-[#191c18]">
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+              <h3 className="font-editorial min-w-0 text-lg leading-snug font-semibold text-[#191c18]">
                 {product.name}
               </h3>
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 text-left sm:text-right">
                 {product.trafficLight === 'UNKNOWN' ? (
                   <>
                     <span className="font-editorial text-lg font-bold text-[#7c7a72]">
@@ -177,7 +177,7 @@ export function GarmentCard({ product }: GarmentCardProps) {
       </div>
 
       {/* Pie de etiqueta: precio + link directo */}
-      <div className="flex items-center justify-between border-t border-[#e5decfe0] bg-[#f6f2e9] px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e5decfe0] bg-[#f6f2e9] px-4 py-2.5">
         <div className="font-label text-xs">
           {formattedSpecial ? (
             <div className="flex items-center gap-2">

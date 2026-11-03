@@ -64,7 +64,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
       onClick={handleReset}
     >
       <div
-        className="garment-tag-border relative w-full max-w-lg border-2 border-[#191c18] bg-[#fbf9f5] p-6 shadow-2xl sm:p-8"
+        className="garment-tag-border relative max-h-[calc(100dvh-2rem)] min-w-0 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] w-full max-w-lg border-2 border-[#191c18] bg-[#fbf9f5] p-6 shadow-2xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Botón cerrar */}
@@ -103,7 +103,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
           </div>
         ) : (
           <>
-            <h2 className="font-editorial mt-1 text-2xl font-bold text-[#191c18]">
+            <h2 className="font-editorial mt-1 pr-8 text-2xl font-bold text-[#191c18]">
               Sugerir una tienda o prenda
             </h2>
             <p className="mt-1.5 text-xs leading-relaxed text-[#5a5d55]">
