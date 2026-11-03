@@ -199,6 +199,14 @@ dejar escrituras parciales; no es una transacción global ni un bloqueo para CLI
 en hosts independientes. Una recuperación vacía se considera fallo y no renueva
 la fecha de la marca. No ejecutar el CLI durante una reparación del histórico.
 
+El producto se presenta como **archivo de consultas parciales**. La corrida
+semanal toma una cantidad limitada por marca; no certifica que todo el catálogo
+se revise semanalmente, ni desactiva automáticamente prendas no visitadas.
+La interfaz muestra las fechas registradas por marca y advierte que precios y
+stock deben confirmarse en la tienda. Si la fuente informa más productos que
+los cargados, indica el recorte y el alcance de búsqueda/filtros. Una rotación
+completa con gestión de obsolescencia queda como mejora operativa posterior.
+
 La portada usa render dinámico por solicitud: Prisma y la API se consultan al
 cargar o recargar la página, sin congelar productos durante el build. No incluye
 actualización automática de una pestaña ya abierta. Referencia de Next.js 15:

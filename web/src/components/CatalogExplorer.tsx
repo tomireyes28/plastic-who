@@ -10,6 +10,7 @@ import { ContactModal } from './ContactModal';
 import { FiberGuideView } from './FiberGuideView';
 import { GarmentCard } from './GarmentCard';
 import { TrafficLightInfoModal } from './TrafficLightInfoModal';
+import { CatalogStatus } from './CatalogStatus';
 
 interface CatalogExplorerProps {
   initialBrands: BrandSummary[];
@@ -216,7 +217,7 @@ export function CatalogExplorer({
             Plastic Who?
           </h1>
           <span className="font-label text-xs text-[#5a5d55]">
-            {initialProducts.length.toLocaleString('es-AR')} prendas auditadas
+            {initialProducts.length.toLocaleString('es-AR')} productos en el archivo
           </span>
         </div>
 
@@ -226,6 +227,7 @@ export function CatalogExplorer({
         </p>
 
         {/* Navegación principal tipo pestañas de fichero */}
+        <CatalogStatus brands={initialBrands} loaded={initialProducts.length} />
         <nav
           aria-label="Modo de exploración"
           className="mt-6 grid grid-cols-3 border border-[#191c18] bg-[#e8e2d5] p-1"
