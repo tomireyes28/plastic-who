@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server';
 import nodemailer from 'nodemailer';
 import { POST } from './route';
+import { reserveContactDelivery } from '../../../lib/contact-quota';
 
 jest.mock('nodemailer', () => ({ __esModule: true, default: { createTransport: jest.fn() } }));
+jest.mock('../../../lib/contact-quota', () => ({ ...jest.requireActual('../../../lib/contact-quota'), reserveContactDelivery: jest.fn() }));
 const valid = { name: '<b>Sofía</b>', email: 'sofia@example.com', message: '<img src=x onerror=alert(1)>' };
 const keys = ['RESEND_API_KEY', 'SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'CONTACT_EMAIL'];
 const saved = { ...process.env };
@@ -10,7 +12,7 @@ const request = (body: unknown = valid) => new NextRequest('http://localhost/api
   method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
 });
 describe('Honest contact delivery (H14)', () => {
-  beforeEach(() => { keys.forEach(key => delete process.env[key]); jest.spyOn(console, 'error').mockImplementation(() => {}); });
+  beforeEach(() => { keys.forEach(key => delete process.env[key]); (reserveContactDelivery as jest.Mock).mockResolvedValue('allowed'); jest.spyOn(console, 'error').mockImplementation(() => {}); });
   afterEach(() => { jest.restoreAllMocks(); keys.forEach(key => { if (saved[key] === undefined) delete process.env[key]; else process.env[key] = saved[key]; }); });
   it('returns unavailable without credentials and never logs message contents', async () => {
     const log = jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -39,6 +41,14 @@ describe('Honest contact delivery (H14)', () => {
   it('rejects invalid fields before requesting delivery', async () => {
     const send = jest.spyOn(global, 'fetch');
     expect((await POST(request({ ...valid, email: ['invalid'] }))).status).toBe(400);
+    expect(send).not.toHaveBeenCalled();
+  });
+  it('rejects an exhausted quota without contacting the mail provider', async () => {
+    process.env.RESEND_API_KEY = 'test-only';
+    (reserveContactDelivery as jest.Mock).mockResolvedValue('limited');
+    const send = jest.spyOn(global, 'fetch');
+    const res = await POST(request());
+    expect(res.status).toBe(429); expect(res.headers.get('Retry-After')).toBe('3600');
     expect(send).not.toHaveBeenCalled();
   });
 });

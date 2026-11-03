@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { escapeContactHtml, parseContact } from '../../../lib/contact';
+import { readContactBody, reserveContactDelivery } from '../../../lib/contact-quota';
 
 export async function POST(req: NextRequest) {
   try {
     let body: unknown;
-    try { body = await req.json(); } catch {
-      return NextResponse.json({ error: 'El contenido del formulario no es válido.' }, { status: 400 });
+    try { body = await readContactBody(req); } catch (error) {
+      return NextResponse.json({ error: 'El contenido del formulario no es válido o supera el tamaño permitido.' },
+        { status: error instanceof Error && error.message === 'TOO_LARGE' ? 413 : 400 });
     }
     const parsed = parseContact(body);
     if (!parsed) {
@@ -16,6 +18,11 @@ export async function POST(req: NextRequest) {
       );
     }
     const { name, email, reason, message } = parsed;
+    const quota = await reserveContactDelivery();
+    if (quota !== 'allowed') return NextResponse.json({ error: quota === 'limited'
+      ? 'Se alcanzó el límite de envíos. Conservá tu mensaje e intentá más tarde.'
+      : 'El contacto está temporalmente fuera de servicio. Conservá tu mensaje.' },
+      { status: quota === 'limited' ? 429 : 503, headers: quota === 'limited' ? { 'Retry-After': '3600' } : {} });
     const safeName = escapeContactHtml(name), safeEmail = escapeContactHtml(email);
     const safeReason = escapeContactHtml(reason), safeMessage = escapeContactHtml(message);
 

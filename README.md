@@ -223,6 +223,19 @@ locales; fuerza vacías las variables de conexión a PostgreSQL.
 
 ## 🧪 Cobertura de Tests
 
+El contacto valida los campos y limita el cuerpo a 24 KiB y 5 segundos de lectura.
+Solo informa éxito después de la aceptación del proveedor, sin garantizar entrega
+en la bandeja de entrada. Los fallos conservan el texto en el formulario.
+En producción requiere `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` además
+de Resend o SMTP: una reserva atómica compartida limita los intentos de envío a
+10 por hora UTC y 50 por día UTC para la aplicación. No confía en IPs enviadas por
+el cliente. Una cuota agotada responde 429; un control no disponible responde 503.
+La cuota de memoria se permite exclusivamente en desarrollo/pruebas, no como
+respaldo en producción. El contrato REST se verifica con la
+[documentación oficial de Upstash](https://upstash.com/docs/redis/features/restapi).
+Estas cuotas protegen el presupuesto de correo; el hosting debe limitar también
+el tráfico HTTP abusivo. Las pruebas usan proveedores simulados y no envían correos.
+
 El proyecto cuenta con suites de tests automatizados con Jest que verifican:
 - Parseo de fichas técnicas reales y normalización de sinónimos.
 - Tolerancia a sintaxis de forrerías y ribetes de cuello.
