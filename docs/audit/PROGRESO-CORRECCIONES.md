@@ -99,6 +99,16 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Continúan 180 alertas históricas y 303 pendientes de propuestas calculadas, con las superposiciones explicadas en el reporte. No se aplicaron cambios ni se desplegó código. Build de API correcto; sin cambios productivos ni nueva ejecución de pruebas en este paso.
 - Estado vigente, artefactos y criterios de cierre: `docs/audit/VISTA-PREVIA-H06-CORRECCIONES-INTEGRADAS.md`. Los párrafos anteriores registran fotografías históricas; esta actualización es la referencia actual.
 
+### Integración H06 — Las 86 declaraciones restantes de Funky Monkeys
+
+- El parser reconoce los formatos explícitos «algodón jersey», «jersey de algodón 100%», «jersey 100% algodón» y «rústico 100% viscosa» junto con las cláusulas comerciales comprobadas. Los nombres de producto y el tejido no generan fibras ni porcentajes; se exige una declaración cuantificada.
+- «Material» delimita una declaración técnica y permite deduplicar su repetición equivalente. Dentro de un forro conserva esa sección; una declaración diferente o un componente sin cantidades sigue impidiendo clasificar.
+- La revisión confirma 76 declaraciones de algodón (verde) y 10 de viscosa (amarillo). La descripción anterior de las 86 como algodón era imprecisa; los resultados manuales previos ya distinguían correctamente ambas fibras.
+- Agregadas 44 pruebas: 22 descripciones completas representativas y controles de cantidades ausentes/parciales/excesivas/negativas, materiales adicionales conocidos/desconocidos, contradicciones, deduplicación y forro. Primero se reprodujeron 23 fallos en las primeras 37 pruebas; con la integración pasan las 300 pruebas del backend y el build de API.
+- Comprobación adicional sin red: los 86 HTML guardados conservan su huella y, procesados por el adaptador y el parser actuales, reproducen exactamente fibras, cantidades, partes y semáforo de la propuesta revisada. Contraste de las 806 fuentes reproducibles: ningún color cambia fuera de esas 86. Evidencia local ignorada por Git en `docs/audit/previews/H06-funky-86-integradas/VERIFICACION.json`.
+- Con esta comprobación, las declaraciones clasificables reproducidas pasan de 193 a 279 sobre 339; quedan 60 selecciones/transcripciones de ese grupo (28 Reír Enloquecer y 32 One Place World), además de las decisiones y colas anteriores. Esto no cierra H06 ni regenera la vista previa acumulada con huellas nuevas: falta ese paso antes de evaluar una aplicación.
+- No se consultó ni escribió la base, no se consultaron tiendas, no se ejecutó persistencia real ni se desplegó código. La propuesta anterior sigue siendo evidencia histórica y ninguna fila se aprueba para aplicar con este cambio.
+
 ## H07 — Catálogo dinámico, sin fallback implícito
 
 - La portada ahora se renderiza por solicitud. No congela consultas Prisma en el build; la siguiente carga o recarga vuelve a leer la fuente.

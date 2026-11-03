@@ -25,10 +25,10 @@ const SECONDARY_SECTION_REGEX =
   /^(?:ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|encaje|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)$/i;
 
 const MAIN_SECTION_REGEX =
-  /^(?:exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|composici[oó]n)$/i;
+  /^(?:exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|material|composici[oó]n)$/i;
 
 const SECTION_HEADER_REGEX =
-  /(?:^|[-.;|/•*\n]\s*|\s+)(exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|composici[oó]n|forrer[ií]a(?:\s*\([^)]*\))?|forro(?:-lining)?|interior|viso|lining|ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|encaje|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)(?:\s*[:\-]\s*|\s+(?=\d{1,3}\s*%|[a-záéíóúñA-ZÁÉÍÓÚÑ]+\s+\d{1,3}\s*%))/gi;
+  /(?:^|[-.;|/•*\n]\s*|\s+)(exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|material|composici[oó]n|forrer[ií]a(?:\s*\([^)]*\))?|forro(?:-lining)?|interior|viso|lining|ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|encaje|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)(?:\s*[:\-]\s*|\s+(?=\d{1,3}\s*%|[a-záéíóúñA-ZÁÉÍÓÚÑ]+\s+\d{1,3}\s*%))/gi;
 
 type SectionType = 'MAIN' | 'LINING' | 'SECONDARY';
 interface Section { type: SectionType; text: string }
@@ -161,7 +161,7 @@ export class CompositionParserService {
       const label = match[1].trim();
       if (LINING_SECTION_REGEX.test(label)) type = 'LINING';
       else if (SECONDARY_SECTION_REGEX.test(label)) type = 'SECONDARY';
-      else if (MAIN_SECTION_REGEX.test(label) && !/^composici[oó]n$/i.test(label)) type = 'MAIN';
+      else if (MAIN_SECTION_REGEX.test(label) && !/^(?:composici[oó]n|material)$/i.test(label)) type = 'MAIN';
       lastIndex = headers.lastIndex;
     }
     // An explicitly empty section is incomplete, not evidence of an absent lining.
@@ -204,7 +204,7 @@ export class CompositionParserService {
     // rawComposition still retains the original source, including the typo.
     const text = normalizeText(source)
       .replace(/(\b(?:jersey|frisa)\s+de\s+)a\s+lgodon\b/g, '$1algodon');
-    const cottonConstruction = /(?:\d+(?:[.,]\d+)?\s*%\s+(?:en\s+)?(?:jersey|frisa)\s+de\s+algodon\b|\b(?:jersey|frisa)\s+\d+(?:[.,]\d+)?\s*%\s+de\s+algodon\b)/.exec(text);
+    const reviewedConstruction = /(?:\d+(?:[.,]\d+)?\s*%\s+(?:en\s+)?(?:jersey\s+de\s+|frisa\s+de\s+|de\s+)?algodon\b|\balgodon\s+\d+(?:[.,]\d+)?\s*%|\b(?:jersey|frisa)\s+\d+(?:[.,]\d+)?\s*%\s+de\s+algodon\b|\brustico\s+\d+(?:[.,]\d+)?\s*%\s+viscosa\b)/.exec(text);
     type Token = { start: number; end: number } & (
       { kind: 'FIBER'; name: string } | { kind: 'PERCENTAGE'; percentage: number }
     );
@@ -266,18 +266,28 @@ export class CompositionParserService {
       (remaining, token) => remaining.slice(0, token.start) + ' '.repeat(token.end - token.start) + remaining.slice(token.end),
       text,
     );
-    if (cottonConstruction) {
+    if (reviewedConstruction) {
       const additionalFiber = /\b(?:otras?\s+fibras?|fibras?\s+(?:desconocid\w*|no\s+identificad\w*))\b/.test(residue);
       // Only the reviewed commercial introduction can be omitted from coverage checks.
       // Unknown material wording before the declaration must remain visible to validation.
-      const introduction = text.slice(0, cottonConstruction.index).trim();
+      const introduction = text.slice(0, reviewedConstruction.index).trim();
       if (/^descubre nuestra remera de ninas "[^"]+"\s*,\s*un diseno pensado para que tus pequenas luzcan radiantes y comodas\.\s*confeccionada$/.test(introduction)
-        && !tokens.some(token => token.start < cottonConstruction.index)) {
-        residue = ' '.repeat(cottonConstruction.index) + residue.slice(cottonConstruction.index);
+        && !tokens.some(token => token.start < reviewedConstruction.index)) {
+        residue = ' '.repeat(reviewedConstruction.index) + residue.slice(reviewedConstruction.index);
+      }
+      // The captured introduction has one comma before the explicit declaration.
+      // Do not strip arbitrary prefixes: another material/quantity must remain visible.
+      if (/^descubre nuestra remera mangas cortas [a-z0-9 ]+\s*,\s*confeccionada en$/.test(introduction)
+        && !tokens.some(token => token.start < reviewedConstruction.index)) {
+        residue = ' '.repeat(reviewedConstruction.index) + residue.slice(reviewedConstruction.index);
       }
       // These commercial clause openings occur in the reviewed construction statements.
       // Keep all tokens/amounts and other delimiters: extra fibers still invalidate coverage.
-      residue = residue.replace(/,\s*(?=(?:muy suave y extra comodo|esta prenda (?:de calidad superior )?(?:ofrece|te garantiza|es suave al tacto)|especialmente disenad[oa] para (?:ninos|ninas)|este buzo es ideal|garantiza una comodidad|ideal para|perfect[oa]s? para)\b)/g, '. ');
+      residue = residue.replace(/,\s*(?=(?:esta prenda (?:de calidad superior )?(?:ofrece|te garantiza|es suave al tacto)|especialmente disenad[oa] para (?:ninos|ninas)|este buzo es ideal|garantiza una comodidad|ideal para|perfect[oa]s? para)\b)/g, '. ');
+      // Match complete reviewed commercial clauses, including their internal commas.
+      // Never consume arbitrary text following the clause or any fiber/percentage token.
+      residue = residue.replace(/,\s*(?:de la mejor calidad, muy suave y extra comodo|muy suave y extra comodo|super suave y extra confortable|super livianito, fresco y extra comodo|extra suave y suuuuuuper liviano para los dias calurosos de verano|extra suave y suuuuuuper livianito para los dias calurosos de verano|esta remera es perfecta para disfrutar de los dias de calor sin perder el estilo|esta remera es suave, fresca y, sobre todo, comoda|lo que la hace super fresca y liviana|garantizando una suavidad excepcional y un look tierno que hara que tu pequena luzca encantadora en cualquier ocasion)(?=\s*(?:[.!]|$))/g, '. ');
+      residue = residue.replace(/,\s*(?:especial para jugar los dias de verano|sera tu aliado a la hora de vestir a tu bebe y mantenerlo abrigadito|sino tambien para jugar en casa de la manera mas comoda|por lo que es requete comodo para jugar libremente)(?=\s*(?:[.!]|$))/g, '. ');
       covered = covered && !additionalFiber;
     }
     // An additional unquantified component is not proof of a complete exterior either.

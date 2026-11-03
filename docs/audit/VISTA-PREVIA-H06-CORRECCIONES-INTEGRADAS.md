@@ -2,6 +2,8 @@
 
 Actualización del 3 de noviembre de 2026. **No se aplicaron cambios en la base. Cero filas aprobadas para aplicar.** Esta revisión sustituye los totales de las vistas previas anteriores, sin borrar su evidencia.
 
+> Actualización posterior: las 86 declaraciones pendientes de Funky Monkeys ya se integraron en el parser y se verificaron con sus HTML guardados (76 algodón y 10 viscosa). Quedan 60 selecciones/transcripciones de este grupo de 339. Los totales y artefactos de este documento describen la fotografía anterior a esa integración; falta regenerar la propuesta acumulada con las nuevas huellas. Ver `PROGRESO-CORRECCIONES.md`.
+
 ## Resultado principal
 
 La propuesta acumulada conserva **613 diferencias de análisis y 302 cambios de color** respecto de los datos almacenados. No cambia ningún color respecto de la última revisión manual. La mejora es que el código productivo ahora reproduce resultados que antes dependían de selecciones o normalizaciones locales.
@@ -23,7 +25,7 @@ De las **339 declaraciones clasificables incorporadas en la revisión anterior**
 
 | Selección o transcripción todavía necesaria | Casos |
 |---|---:|
-| Funky Monkeys: otros formatos de declaración de algodón | 86 |
+| Funky Monkeys: otros formatos de declaración de algodón/viscosa | 86 |
 | Reír Enloquecer: selección de declaración en la descripción | 28 |
 | One Place World: declaración de bambú recuperada visualmente | 32 |
 
