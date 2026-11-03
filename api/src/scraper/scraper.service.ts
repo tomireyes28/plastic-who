@@ -120,7 +120,7 @@ export class ScraperService implements OnModuleInit {
         chunk.map(async (item) => {
           const analysis = this.compositionParser.parseFromText(item.description);
 
-          const hasValidComposition = analysis.fibers.length > 0;
+          const hasValidComposition = analysis.trafficLight !== 'UNKNOWN';
           if (hasValidComposition) {
             withCompositionCount++;
           } else {
@@ -150,7 +150,7 @@ export class ScraperService implements OnModuleInit {
             trafficLight: analysis.trafficLight,
             hasSyntheticLining: analysis.hasSyntheticLining,
             inStock: item.inStock,
-            isActive: true, // Guardamos todas las prendas; las que no detallan composición se marcan como 'No indica'
+            isActive: true, // Las declaraciones ausentes o insuficientes se conservan sin clasificar.
             lastSeenAt: now,
           };
 
@@ -187,7 +187,7 @@ export class ScraperService implements OnModuleInit {
     });
 
     this.logger.log(
-      `Scraping finalizado para ${brand.name}: ${withCompositionCount} con composición, ${withoutCompositionCount} sin composición.`,
+      `Scraping finalizado para ${brand.name}: ${withCompositionCount} clasificadas, ${withoutCompositionCount} sin clasificación.`,
     );
 
     return {

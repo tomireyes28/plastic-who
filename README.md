@@ -64,7 +64,12 @@ Las fichas técnicas en e-commerce tienen formatos sumamente heterogéneos y con
 El motor implementa:
 - **Segmentación por Secciones**: Clasifica el texto en bloques `MAIN` (tela exterior/base), `LINING` (forrería/viso) y `SECONDARY` (ribetes, cuellos, combinaciones, hombreras), priorizando siempre la tela principal y aislando forros sintéticos.
 - **Diccionario Canónico**: Normaliza decenas de términos a categorías textiles estándar (*NATURAL*, *SEMISYNTHETIC*, *SYNTHETIC*).
-- **Invariante Matemática estricta `[0, 100]%`**: Ninguna fibra individual ni la suma de las fibras de una prenda puede exceder el 100%, con normalización proporcional defensiva en backend y frontend.
+- **Validación de porcentajes:** el parser rechaza cantidades negativas, fuera de rango o sumas superiores a 100% en cada sección; no las convierte proporcionalmente en una composición aparentemente válida. Exterior y forro se evalúan por separado.
+- **Composición incompleta:** se conservan las fibras reconocidas, pero el resultado queda `UNKNOWN` si faltan porcentajes, hay componentes sin identificar o una sección declarada no puede interpretarse. Se admite un faltante de hasta 0,1 puntos por redondeo, sin completar ni escalar las cifras. La interfaz lo presenta como «sin clasificar», sin atribuir automáticamente una omisión a la marca.
+
+Estas reglas se aplican a los análisis nuevos. La revisión y reparación de los
+registros ya guardados se realiza por separado; modificar el parser no corrige
+automáticamente el catálogo histórico.
 
 ### 2. Pipeline de Scraping Resiliente a Escala
 - **Sitemap Discovery & SSR Extraction**: Descubrimiento de URLs mediante sitemaps XML combinando parsing de JSON-LD Schema.org y desestructuración de payloads hidratados de Next.js (`self.__next_f.push`).

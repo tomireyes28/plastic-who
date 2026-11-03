@@ -408,7 +408,7 @@ export function CatalogExplorer({
                       { id: 'GREEN', label: '🟢 Verde ≥95%' },
                       { id: 'YELLOW', label: '🟡 Amarillo' },
                       { id: 'RED', label: '🔴 Rojo' },
-                      { id: 'UNKNOWN', label: '⚪ No indica' },
+                      { id: 'UNKNOWN', label: '⚪ Sin clasificar' },
                     ] as const
                   ).map((opt) => (
                     <button

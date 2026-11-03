@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { resolveFiber } from './fiber-dictionary';
+import { FIBER_DICTIONARY, normalizeText, resolveFiber } from './fiber-dictionary';
 import {
   DEFAULT_TRAFFIC_LIGHT_RULES,
   ParsedFiberItem,
@@ -22,271 +22,231 @@ const LINING_SECTION_REGEX =
   /^(?:forrer[ií]a(?:\s*\([^)]*\))?|forro(?:-lining)?|interior|viso|lining)$/i;
 
 const SECONDARY_SECTION_REGEX =
-  /^(?:ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)$/i;
+  /^(?:ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|encaje|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)$/i;
 
 const MAIN_SECTION_REGEX =
   /^(?:exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|composici[oó]n)$/i;
 
 const SECTION_HEADER_REGEX =
-  /(?:^|[-.;|/•*\n]\s*|\s+)(exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|composici[oó]n|forrer[ií]a(?:\s*\([^)]*\))?|forro(?:-lining)?|interior|viso|lining|ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)(?:\s*[:\-]\s*|\s+(?=\d{1,3}\s*%|[a-záéíóúñA-ZÁÉÍÓÚÑ]+\s+\d{1,3}\s*%))/gi;
+  /(?:^|[-.;|/•*\n]\s*|\s+)(exterior|tejido\s*principal|tela\s*princip?al|g[eé]nero\s*base|tela\s*base|base|cuerpo|composici[oó]n|forrer[ií]a(?:\s*\([^)]*\))?|forro(?:-lining)?|interior|viso|lining|ribb?|cuello|pu[ñn]os|complemento|flecos|hilos|vivos|detalles|encaje|recortes|(?:g[eé]nero\s*|tela\s*)?combinaci[oó]n|contraste|con\s*aplicaci[oó]n|aplicaci[oó]n|relleno(?:-padding)?(?:\s+hombreras)?|padding|hombreras)(?:\s*[:\-]\s*|\s+(?=\d{1,3}\s*%|[a-záéíóúñA-ZÁÉÍÓÚÑ]+\s+\d{1,3}\s*%))/gi;
+
+type SectionType = 'MAIN' | 'LINING' | 'SECONDARY';
+interface Section { type: SectionType; text: string }
+interface SectionResult { fibers: ParsedFiberItem[]; covered: boolean; invalid: boolean }
+
+const EPSILON = 0.000001;
+const MIN_COMPLETE_PERCENTAGE = 99.9; // Allow a 0.1-point rounding shortfall, never an excess.
+const FIBER_ALIASES = [...new Set(FIBER_DICTIONARY.flatMap(def => def.synonyms.map(normalizeText)))]
+  .sort((a, b) => b.length - a.length)
+  .map(alias => alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+const FIBER_TOKEN_PATTERN = `(?<![a-z0-9])(?:${FIBER_ALIASES.join('|')})(?![a-z0-9])`;
+
+function cleanSource(rawText: string): string {
+  const entities: Record<string, string> = {
+    aacute: 'á', eacute: 'é', iacute: 'í', oacute: 'ó', uacute: 'ú',
+    ntilde: 'ñ', uuml: 'ü', nbsp: ' ', amp: '&', quot: '"', apos: "'",
+  };
+  return rawText.normalize('NFC')
+    .replace(/\\r\\n|\\n|\\r/g, '\n')
+    .replace(/\r\n?/g, '\n')
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '')
+    .replace(/<br\s*\/?>|<\/(?:p|li|div|tr|h[1-6])\s*>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(#x[\da-f]+|#\d+|[a-z]+);/gi, (entity, name: string) => {
+      if (!name.startsWith('#')) return entities[name.toLowerCase()] ?? entity;
+      const code = name[1].toLowerCase() === 'x' ? parseInt(name.slice(2), 16) : parseInt(name.slice(1), 10);
+      return code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
+        ? String.fromCodePoint(code) : ' ';
+    })
+    .trim();
+}
 
 @Injectable()
 export class CompositionParserService {
   constructor(private readonly trafficLightService: TrafficLightService) {}
 
-  /**
-   * Analiza el texto de descripción o ficha de un producto y devuelve las fibras y el semáforo.
-   */
   parseFromText(
     text: string,
     rules: TrafficLightRulesConfig = DEFAULT_TRAFFIC_LIGHT_RULES,
   ): CompositionAnalysisResult {
     const rawComposition = this.extractCompositionSegment(text);
-
-    if (!rawComposition) {
-      return {
-        rawComposition: 'No indica',
-        fibers: [],
-        naturalPercentage: 0,
-        semiSyntheticPercentage: 0,
-        syntheticPercentage: 0,
-        trafficLight: 'UNKNOWN',
-        hasSyntheticLining: false,
-      };
-    }
-
-    const fibers = this.extractFibersFromSegment(rawComposition);
-    if (fibers.length === 0) {
-      return {
-        rawComposition: rawComposition || 'No indica',
-        fibers: [],
-        naturalPercentage: 0,
-        semiSyntheticPercentage: 0,
-        syntheticPercentage: 0,
-        trafficLight: 'UNKNOWN',
-        hasSyntheticLining: false,
-      };
-    }
-
+    const { fibers, complete } = this.analyzeSegment(rawComposition ?? '');
     const evaluation = this.trafficLightService.evaluate(fibers, rules);
-
     return {
-      rawComposition,
+      rawComposition: rawComposition ?? 'No indica',
       fibers,
       ...evaluation,
+      trafficLight: complete ? evaluation.trafficLight : 'UNKNOWN',
     };
   }
 
-  /**
-   * Extrae la oración o bloque donde se detalla la composición dentro de una descripción larga o HTML.
-   */
+  /** Keep contiguous technical lines, including unlabeled percentage continuations. */
   extractCompositionSegment(rawText: string): string | null {
     if (!rawText) return null;
-
-    // Limpiar tags HTML comunes y saltos de línea escapados (\n, <br>)
-    const cleaned = rawText
-      .replace(/\\r\\n|\\n/g, '\n')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p>|<\/li>|<\/div>/gi, '\n')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&nbsp;/gi, ' ')
-      .trim();
-
-    // 1. Buscar etiqueta explícita "Composición:" (puede tener salto de línea inmediato y líneas de "Forrería:")
-    const explicitMatch = cleaned.match(
-      /composici[oó]n\s*:?\s*([^\n]+(?:\n\s*(?:forr(?:er[ií]a|o)|interior|exterior|g[eé]nero\s*base|tela\s*base|base|tejido\s*\d)\s*:?\s*[^\n]+)*)/i,
-    );
-
-    if (explicitMatch && explicitMatch[1]) {
-      return explicitMatch[1].replace(/\s+/g, ' ').trim();
+    const cleaned = cleanSource(rawText);
+    const compositionHeading = /\bcomposici[oó]n\s*:?[ \t]*/i.exec(cleaned);
+    let source = cleaned;
+    if (compositionHeading) {
+      // A nested "Forro: Composición:" heading must not turn lining into exterior.
+      const prefix = cleaned.slice(0, compositionHeading.index).split('\n').pop() ?? '';
+      const precedingHeaders = [...prefix.matchAll(new RegExp(SECTION_HEADER_REGEX.source, 'gi'))];
+      const lastHeader = precedingHeaders[precedingHeaders.length - 1];
+      const sectionPrefix = lastHeader && !prefix.slice(lastHeader.index! + lastHeader[0].length).trim()
+        ? lastHeader[0] : '';
+      source = sectionPrefix + cleaned.slice(compositionHeading.index + compositionHeading[0].length);
     }
+    const lines = source.split('\n').map(line => line.replace(/[ \t]+/g, ' ').trim());
+    const header = new RegExp(SECTION_HEADER_REGEX.source, 'i');
+    const percentage = /\d+(?:[.,]\d+)?\s*%/;
+    const isFiberList = (line: string) => {
+      const normalized = normalizeText(line);
+      const residue = normalized.replace(new RegExp(FIBER_TOKEN_PATTERN, 'g'), '');
+      return residue !== normalized && /^[\s,;/+&-]*$/.test(residue.replace(/\by\b/g, ''));
+    };
+    const start = compositionHeading ? 0 : lines.findIndex(line => header.test(line) || percentage.test(line));
+    if (start < 0) return null;
 
-    // 2. Buscar líneas que empiecen con "Exterior:" / "Género base:" seguido de porcentajes
-    const multiPartMatch = cleaned.match(
-      /((?:exterior|tejido\s*principal|g[eé]nero\s*base|tela\s*base|cuerpo)\s*:\s*[^\n]+(?:\n\s*(?:forr(?:er[ií]a|o)|interior)\s*:\s*[^\n]+)*)/i,
-    );
-
-    if (multiPartMatch && multiPartMatch[1]) {
-      const candidate = multiPartMatch[1].replace(/\s+/g, ' ').trim();
-      if (this.extractFibersFromSegment(candidate).length > 0) {
-        return candidate;
+    const selected: string[] = [];
+    for (const line of lines.slice(start)) {
+      if (!line) continue;
+      const stop = /\b(?:cuidados|lavado|instrucciones|medidas|talles|colores)\s*:/i.exec(line);
+      const candidate = stop ? line.slice(0, stop.index).trim() : line;
+      if (candidate && (selected.length === 0 || header.test(candidate) || percentage.test(candidate) || isFiberList(candidate))) {
+        selected.push(candidate);
+      } else if (candidate) {
+        break;
       }
+      if (stop) break;
     }
-
-    // 3. Fallback: buscar en cada línea si contiene patrones "XX% <fibra>" o "<fibra> XX%"
-    const lines = cleaned.split('\n');
-    for (const line of lines) {
-      if (
-        /\b\d{1,3}(?:[.,]\d+)?\s*%\s*[a-záéíóúñ]+/i.test(line) ||
-        /[a-záéíóúñ]+\s+\d{1,3}(?:[.,]\d+)?\s*%/i.test(line)
-      ) {
-        const candidate = line.replace(/^[•\-*]\s*/, '').trim();
-        if (this.extractFibersFromSegment(candidate).length > 0) {
-          return candidate;
-        }
-      }
-    }
-
-    return null;
+    return selected.length ? selected.join('\n') : null;
   }
 
-  /**
-   * Parsea un segmento de composición (ej: "98% Algodón - 2% Elastano. Forrería: 100% Poliéster",
-   * "100% ALGODÓN - RIBB: 100% ALGODÓN" o formato VTEX "LINO 40%, VISCOSA 60%") separando tela principal,
-   * forrería y partes secundarias (rib, cuello, puños, combinaciones), garantizando que nunca se supere el 100%.
-   */
+  /** Only main and lining fibers are returned; a trim never stands in for the exterior. */
   extractFibersFromSegment(segment: string): ParsedFiberItem[] {
-    if (!segment) return [];
-
-    const rawSections: Array<{
-      type: 'MAIN' | 'LINING' | 'SECONDARY';
-      text: string;
-    }> = [];
-    let lastIndex = 0;
-    let currentType: 'MAIN' | 'LINING' | 'SECONDARY' = 'MAIN';
-    let match: RegExpExecArray | null;
-
-    SECTION_HEADER_REGEX.lastIndex = 0;
-    while ((match = SECTION_HEADER_REGEX.exec(segment)) !== null) {
-      const precedingText = segment.slice(lastIndex, match.index).trim();
-      if (precedingText) {
-        rawSections.push({ type: currentType, text: precedingText });
-      }
-      const label = match[1].toLowerCase().trim();
-      if (LINING_SECTION_REGEX.test(label)) {
-        currentType = 'LINING';
-      } else if (SECONDARY_SECTION_REGEX.test(label)) {
-        currentType = 'SECONDARY';
-      } else if (MAIN_SECTION_REGEX.test(label)) {
-        currentType = 'MAIN';
-      }
-      lastIndex = SECTION_HEADER_REGEX.lastIndex;
-    }
-
-    const remainingText = segment.slice(lastIndex).trim();
-    if (remainingText) {
-      rawSections.push({ type: currentType, text: remainingText });
-    }
-
-    const mainFibers: ParsedFiberItem[] = [];
-    const liningFibers: ParsedFiberItem[] = [];
-    const secondaryFibers: ParsedFiberItem[] = [];
-
-    const parseSectionText = (
-      text: string,
-      isLining: boolean,
-      targetList: ParsedFiberItem[],
-    ) => {
-      const pctFirstRegex =
-        /(\d{1,3}(?:[.,]\d+)?)\s*%\s*([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+){0,2})/gi;
-      const nameFirstRegex =
-        /([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+){0,2})\s+(\d{1,3}(?:[.,]\d+)?)\s*%/gi;
-
-      let found = false;
-      let m: RegExpExecArray | null;
-
-      while ((m = pctFirstRegex.exec(text)) !== null) {
-        const pct = parseFloat(m[1].replace(',', '.'));
-        const rawFiber = m[2];
-        const resolved = resolveFiber(rawFiber);
-        if (resolved && pct > 0 && pct <= 100) {
-          this.addOrMergeFiber(targetList, {
-            fiberName: resolved.canonicalName,
-            category: resolved.category,
-            percentage: pct,
-            isLining,
-          });
-          found = true;
-        }
-      }
-
-      if (!found) {
-        while ((m = nameFirstRegex.exec(text)) !== null) {
-          const rawFiber = m[1];
-          const pct = parseFloat(m[2].replace(',', '.'));
-          const resolved = resolveFiber(rawFiber);
-          if (resolved && pct > 0 && pct <= 100) {
-            this.addOrMergeFiber(targetList, {
-              fiberName: resolved.canonicalName,
-              category: resolved.category,
-              percentage: pct,
-              isLining,
-            });
-          }
-        }
-      }
-    };
-
-    for (const sec of rawSections) {
-      if (sec.type === 'MAIN') {
-        const currentSum = mainFibers.reduce((s, f) => s + f.percentage, 0);
-        // Si ya tenemos una composición completa de tela base (>=99.5%), no duplicar con bloques repetidos
-        if (currentSum < 99.5) {
-          parseSectionText(sec.text, false, mainFibers);
-        }
-      } else if (sec.type === 'LINING') {
-        const currentSum = liningFibers.reduce((s, f) => s + f.percentage, 0);
-        if (currentSum < 99.5) {
-          parseSectionText(sec.text, true, liningFibers);
-        }
-      } else if (sec.type === 'SECONDARY') {
-        parseSectionText(sec.text, false, secondaryFibers);
-      }
-    }
-
-    // Fallback: si no se detectó tela principal pero sí secciones secundarias (ej: prenda que solo reportó rib)
-    const effectiveMain = mainFibers.length > 0 ? mainFibers : secondaryFibers;
-
-    const normalizeList = (fibers: ParsedFiberItem[]): ParsedFiberItem[] => {
-      if (fibers.length === 0) return [];
-      for (const f of fibers) {
-        f.percentage = Math.min(
-          100,
-          Math.max(0, Math.round(f.percentage * 10) / 10),
-        );
-      }
-      const total = fibers.reduce((sum, f) => sum + f.percentage, 0);
-      if (total > 100) {
-        let running = 0;
-        for (let i = 0; i < fibers.length; i++) {
-          if (i === fibers.length - 1) {
-            fibers[i].percentage = Math.max(
-              0,
-              Math.round((100 - running) * 10) / 10,
-            );
-          } else {
-            fibers[i].percentage =
-              Math.round(((fibers[i].percentage / total) * 100) * 10) / 10;
-            running += fibers[i].percentage;
-          }
-        }
-      }
-      return fibers;
-    };
-
-    return [...normalizeList(effectiveMain), ...normalizeList(liningFibers)];
+    return this.analyzeSegment(segment).fibers;
   }
 
-  private addOrMergeFiber(
-    list: ParsedFiberItem[],
-    item: ParsedFiberItem,
-  ): void {
-    const existing = list.find(
-      (f) => f.fiberName === item.fiberName && f.isLining === item.isLining,
-    );
-    if (existing) {
-      existing.percentage = Math.min(
-        100,
-        Math.round((existing.percentage + item.percentage) * 10) / 10,
-      );
-    } else {
-      list.push({
-        ...item,
-        percentage: Math.min(
-          100,
-          Math.max(0, Math.round(item.percentage * 10) / 10),
-        ),
-      });
+  private analyzeSegment(segment: string): { fibers: ParsedFiberItem[]; complete: boolean } {
+    const sections = this.splitSections(segment);
+    const main = this.parseGroup(sections.filter(section => section.type === 'MAIN'), false);
+    const liningSections = sections.filter(section => section.type === 'LINING');
+    const lining = this.parseGroup(liningSections, true);
+    return {
+      fibers: [...main.fibers, ...lining.fibers],
+      complete: main.covered && (liningSections.length === 0 || lining.covered),
+    };
+  }
+
+  private splitSections(segment: string): Section[] {
+    if (!segment) return [];
+    const sections: Section[] = [];
+    const headers = new RegExp(SECTION_HEADER_REGEX.source, 'gi');
+    let type: SectionType = 'MAIN';
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = headers.exec(segment)) !== null) {
+      const text = segment.slice(lastIndex, match.index).trim();
+      if (text) sections.push({ type, text });
+      const label = match[1].trim();
+      if (LINING_SECTION_REGEX.test(label)) type = 'LINING';
+      else if (SECONDARY_SECTION_REGEX.test(label)) type = 'SECONDARY';
+      else if (MAIN_SECTION_REGEX.test(label) && !/^composici[oó]n$/i.test(label)) type = 'MAIN';
+      lastIndex = headers.lastIndex;
     }
+    // An explicitly empty section is incomplete, not evidence of an absent lining.
+    sections.push({ type, text: segment.slice(lastIndex).trim() });
+    return sections;
+  }
+
+  private parseGroup(sections: Section[], isLining: boolean): SectionResult {
+    const fibers: ParsedFiberItem[] = [];
+    const seen = new Set<string>();
+    let covered = sections.length > 0;
+    let invalid = false;
+    for (const section of sections) {
+      const parsed = this.parseSection(section.text, isLining);
+      // Identical CMS blocks may be repeated. Distinct full compositions are contradictory.
+      const signature = parsed.covered && !parsed.invalid
+        ? JSON.stringify([...parsed.fibers].sort((a, b) => a.fiberName.localeCompare(b.fiberName)))
+        : normalizeText(section.text);
+      if (seen.has(signature)) continue;
+      seen.add(signature);
+      covered = covered && parsed.covered;
+      invalid = invalid || parsed.invalid;
+      for (const fiber of parsed.fibers) {
+        const existing = fibers.find(item => item.fiberName === fiber.fiberName);
+        if (existing) existing.percentage = Math.round((existing.percentage + fiber.percentage) * 1e6) / 1e6;
+        else fibers.push({ ...fiber });
+      }
+    }
+    const total = fibers.reduce((sum, fiber) => sum + fiber.percentage, 0);
+    invalid = invalid || total > 100 + EPSILON;
+    return {
+      fibers: invalid ? [] : fibers,
+      covered: covered && !invalid && total >= MIN_COMPLETE_PERCENTAGE - EPSILON,
+      invalid,
+    };
+  }
+
+  private parseSection(source: string, isLining: boolean): SectionResult {
+    const text = normalizeText(source);
+    type Token = { start: number; end: number } & (
+      { kind: 'FIBER'; name: string } | { kind: 'PERCENTAGE'; percentage: number }
+    );
+    const tokens: Token[] = [];
+    for (const match of text.matchAll(new RegExp(FIBER_TOKEN_PATTERN, 'g'))) {
+      tokens.push({ kind: 'FIBER', name: match[0], start: match.index!, end: match.index! + match[0].length });
+    }
+    for (const match of text.matchAll(/[+\-−]?\d+(?:[.,]\d+)?\s*%/g)) {
+      tokens.push({ kind: 'PERCENTAGE', percentage: parseFloat(match[0].replace(',', '.').replace('−', '-')), start: match.index!, end: match.index! + match[0].length });
+    }
+    tokens.sort((a, b) => a.start - b.start);
+    const fibers: ParsedFiberItem[] = [];
+    const used = new Set<number>();
+    let percentages = 0;
+    let declaredTotal = 0;
+    let covered = true;
+    let invalid = false;
+    const joins = (left: Token, right: Token) => /^[\s]*(?:(?:de|en)\s+)?$/.test(text.slice(left.end, right.start));
+    for (let index = 0; index < tokens.length; index++) {
+      const token = tokens[index];
+      if (token.kind !== 'PERCENTAGE') continue;
+      percentages++;
+      declaredTotal += token.percentage;
+      if (!Number.isFinite(token.percentage) || token.percentage < 0 || token.percentage > 100) invalid = true;
+      const previous = tokens[index - 1];
+      const next = tokens[index + 1];
+      let fiberIndex: number | undefined;
+      if (previous?.kind === 'FIBER' && !used.has(index - 1) && joins(previous, token)) fiberIndex = index - 1;
+      else if (next?.kind === 'FIBER' && !used.has(index + 1) && joins(token, next)) fiberIndex = index + 1;
+      if (fiberIndex === undefined) { covered = false; continue; }
+      used.add(fiberIndex);
+      const fiberToken = tokens[fiberIndex];
+      if (fiberToken.kind !== 'FIBER') continue;
+      const resolved = resolveFiber(fiberToken.name)!;
+      if (token.percentage > 0 && token.percentage <= 100) {
+        fibers.push({ fiberName: resolved.canonicalName, category: resolved.category, percentage: token.percentage, isLining });
+      }
+    }
+    invalid = invalid || declaredTotal > 100 + EPSILON;
+    // Bilingual labels such as "algodón-cotton" denote one fiber, not two amounts.
+    for (let index = 0; index < tokens.length; index++) {
+      const token = tokens[index];
+      if (token.kind !== 'FIBER' || used.has(index)) continue;
+      const previous = tokens[index - 1];
+      if (previous?.kind === 'FIBER' && used.has(index - 1)
+        && /^\s*[-/]\s*$/.test(text.slice(previous.end, token.start))
+        && resolveFiber(previous.name)?.canonicalName === resolveFiber(token.name)?.canonicalName) {
+        used.add(index);
+      }
+    }
+    covered = covered && percentages > 0 && tokens.every((token, index) => token.kind !== 'FIBER' || used.has(index));
+    const residue = [...tokens].reverse().reduce(
+      (remaining, token) => remaining.slice(0, token.start) + ' '.repeat(token.end - token.start) + remaining.slice(token.end),
+      text,
+    );
+    // An additional unquantified component is not proof of a complete exterior either.
+    covered = covered && !/[,;/+|]\s*[a-z]/.test(residue);
+    return { fibers: invalid ? [] : fibers, covered, invalid };
   }
 }

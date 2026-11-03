@@ -98,16 +98,16 @@ export function TrafficLightInfoModal({
           <div className="border-l-4 border-[#8c887e] bg-[#f3efe6] p-3.5">
             <div className="flex items-center justify-between">
               <span className="font-label text-xs font-bold text-[#5a5d55] uppercase">
-                ⚪ Gris · No Informa Composición
+                ⚪ Gris · Sin Clasificar
               </span>
               <span className="font-label text-[10px] bg-[#8c887e]/20 px-2 py-0.5 text-[#5a5d55] font-bold">
-                SIN DATOS
+                SIN CLASIFICAR
               </span>
             </div>
             <p className="mt-1 text-xs leading-relaxed text-[#191c18]">
-              La marca omitió declarar la composición textil en la ficha técnica
-              de su tienda online, impidiendo al consumidor saber qué está
-              comprando antes de pagar.
+              No hay información suficiente para clasificar: puede faltar la
+              declaración, estar incompleta o tener un formato que no pudimos
+              interpretar. Esto no implica necesariamente una omisión de la marca.
             </p>
           </div>
         </div>

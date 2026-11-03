@@ -37,8 +37,8 @@ const STAMP_CONFIG: Record<
     dotClass: 'bg-[#b33c2e]',
   },
   UNKNOWN: {
-    label: 'GRIS · NO INDICA',
-    sublabel: 'Composición no informada',
+    label: 'GRIS · SIN CLASIFICAR',
+    sublabel: 'Composición ausente, incompleta o no interpretable',
     badgeClass:
       'border-[#8c887b]/40 bg-[#8c887b]/10 text-[#4f4d46]',
     dotClass: 'bg-[#8c887b]',
@@ -113,7 +113,7 @@ export function GarmentCard({ product }: GarmentCardProps) {
                 {product.trafficLight === 'UNKNOWN' ? (
                   <>
                     <span className="font-editorial text-lg font-bold text-[#7c7a72]">
-                      No indica
+                      Sin clasificar
                     </span>
                     <span className="font-label block text-[10px] tracking-wider text-[#7c7a72] uppercase">
                       composición
@@ -134,8 +134,14 @@ export function GarmentCard({ product }: GarmentCardProps) {
 
             {/* Barra de trama textil */}
             <div className="mt-3">
-              <WeaveBar fibers={product.fibers} />
+              <WeaveBar fibers={product.trafficLight === 'UNKNOWN' ? [] : product.fibers} />
             </div>
+
+            {product.trafficLight === 'UNKNOWN' && mainFibers.length > 0 && (
+              <p className="font-label mt-2 text-[11px] text-[#5a5d55]">
+                Fibras detectadas; la declaración no permite una clasificación completa.
+              </p>
+            )}
 
             {/* Desglose exacto de fibras */}
             <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -150,7 +156,7 @@ export function GarmentCard({ product }: GarmentCardProps) {
                 ))
               ) : (
                 <span className="font-label inline-block bg-[#efeadf] px-2 py-0.5 text-xs text-[#7c7a72] italic">
-                  {product.rawComposition || 'No indica composición en la tienda'}
+                  {product.rawComposition || 'No se pudo identificar una composición'}
                 </span>
               )}
             </div>
@@ -185,7 +191,7 @@ export function GarmentCard({ product }: GarmentCardProps) {
           ) : formattedPrice ? (
             <span className="font-bold text-[#191c18]">{formattedPrice}</span>
           ) : (
-            <span className="text-[#7c7a72]">Ficha verificada</span>
+            <span className="text-[#7c7a72]">Precio no disponible</span>
           )}
         </div>
 

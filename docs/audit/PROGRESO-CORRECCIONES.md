@@ -31,3 +31,15 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Servicio, pruebas, README, guía, modal y etiqueta amarilla incluyen el criterio de forro; los porcentajes del forro no se suman al exterior.
 - Pruebas cubren distintos sintéticos, forros naturales/semisintéticos, porcentajes cero, el límite 95/5, rojos y exterior ausente.
 - Pendiente: desplegar y reprocesar el histórico en H06. La extracción incompleta y la advertencia cuando falta el exterior corresponden a H04.
+
+## H04 — Extracción, validación e incertidumbre
+
+- Separadas la extracción de líneas técnicas, la segmentación por partes y la asociación de cada porcentaje con su fibra. Los formatos «50% algodón» y «poliéster 50%» pueden coexistir sin reutilizar un porcentaje.
+- Conservadas las continuaciones de composición y las secciones de viso/forro/lining en varias líneas, incluido HTML con entidades comunes. Se ignoran scripts, estilos y se detiene la lectura ante cuidados/medidas y otras secciones ajenas.
+- Cuellos, ribetes, encajes y otras partes secundarias ya no reemplazan un exterior ausente. Una etiqueta «Composición» dentro del forro no cambia su función.
+- Declaraciones parciales o con componentes no identificados quedan sin clasificar; las cantidades negativas, fuera de rango o contradictorias no se normalizan para otorgar un color. Se preservan las fibras parciales válidas y el texto de origen. Se admite un faltante de 0,1 puntos por redondeo, sin inflarlo a 100.
+- Los bloques idénticos repetidos por el CMS no se suman dos veces; composiciones completas distintas para una misma sección quedan sin clasificar. Los alias bilingües de la misma fibra no duplican cantidades.
+- La advertencia de forro sintético se conserva aunque no haya un exterior clasificable. El redondeo de categorías no introduce un total de 100,1% a partir de fibras válidas.
+- El pipeline no cuenta como clasificadas las declaraciones parciales. En la interfaz se usa «sin clasificar» y no se dibuja una barra proporcional completa para ellas.
+- Verificación: 118 pruebas aprobadas (51 nuevas), incluida integración del pipeline con Prisma simulado; compilación del backend y tipos de la web correctos. También se inspeccionó localmente el comportamiento sobre el texto `rawComposition` de un build anterior, sin consultar ni escribir en la base; los casos ambiguos o no soportados pueden pasar a UNKNOWN intencionalmente.
+- Pendiente: despliegue y revisión/reprocesamiento de datos históricos en H06. Este commit no escribe en Supabase ni promete interpretar todos los formatos posibles.

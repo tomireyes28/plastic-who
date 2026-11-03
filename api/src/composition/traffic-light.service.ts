@@ -38,6 +38,9 @@ export class TrafficLightService {
   ): TrafficLightEvaluation {
     const mainFibers = fibers.filter((f) => !f.isLining);
     const liningFibers = fibers.filter((f) => f.isLining);
+    const hasSyntheticLining = liningFibers.some(
+      (f) => f.category === 'SYNTHETIC' && f.percentage > 0,
+    );
 
     if (mainFibers.length === 0) {
       return {
@@ -45,7 +48,7 @@ export class TrafficLightService {
         semiSyntheticPercentage: 0,
         syntheticPercentage: 0,
         trafficLight: 'UNKNOWN',
-        hasSyntheticLining: false,
+        hasSyntheticLining,
       };
     }
 
@@ -70,14 +73,16 @@ export class TrafficLightService {
 
     const totalCategoryPct = naturalPercentage + semiSyntheticPercentage + syntheticPercentage;
     if (totalCategoryPct > 100) {
-      naturalPercentage = Math.min(100, Math.round((naturalPercentage / totalCategoryPct) * 1000) / 10);
-      semiSyntheticPercentage = Math.min(100, Math.round((semiSyntheticPercentage / totalCategoryPct) * 1000) / 10);
-      syntheticPercentage = Math.min(100, Math.round((syntheticPercentage / totalCategoryPct) * 1000) / 10);
+      // Allocate whole tenths by largest remainder: independent rounding can still total 100.1.
+      const exact = [naturalPercentage, semiSyntheticPercentage, syntheticPercentage]
+        .map(value => (value / totalCategoryPct) * 1000);
+      const tenths = exact.map(Math.floor);
+      const remainderOrder = exact.map((value, index) => ({ index, remainder: value - tenths[index] }))
+        .sort((a, b) => b.remainder - a.remainder);
+      const remaining = 1000 - tenths.reduce((sum, value) => sum + value, 0);
+      for (let i = 0; i < remaining; i++) tenths[remainderOrder[i].index]++;
+      [naturalPercentage, semiSyntheticPercentage, syntheticPercentage] = tenths.map(value => value / 10);
     }
-
-    const hasSyntheticLining = liningFibers.some(
-      (f) => f.category === 'SYNTHETIC' && f.percentage > 0,
-    );
 
     let trafficLight: TrafficLightColor = 'RED';
 

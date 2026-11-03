@@ -49,6 +49,8 @@ describe('Traffic light policy (H05)', () => {
   });
 
   it('does not classify an absent exterior from its lining', () => {
-    expect(service.evaluate([fiber('poliéster', 'SYNTHETIC', 100, true)]).trafficLight).toBe('UNKNOWN');
+    const result = service.evaluate([fiber('poliéster', 'SYNTHETIC', 100, true)]);
+    expect(result.trafficLight).toBe('UNKNOWN');
+    expect(result.hasSyntheticLining).toBe(true);
   });
 });
