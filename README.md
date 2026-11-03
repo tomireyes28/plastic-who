@@ -3,6 +3,8 @@
 > **Plataforma de Auditoría Textil y Detección de Fibras Sintéticas en la Moda Argentina.**  
 > Archivo de composiciones declaradas en fichas públicas de tiendas argentinas, con reglas explícitas y reconocimiento de información insuficiente.
 
+[Abrir la aplicación publicada](https://plastic-who.vercel.app/) · [Mejoras para después del portfolio](docs/MEJORAS-PENDIENTES.md)
+
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-11.0-E0234E?style=flat-square&logo=nestjs)](https://nestjs.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -22,7 +24,7 @@ Comparar composiciones entre tiendas exige leer formatos, nombres y mezclas dife
 La fotografía revisada del 3 de noviembre de 2026 contiene **4.662 productos** de tiendas como Wanama, Paula Cahen D'Anvers, Portsaid, Desiderata, Rapsodia, Kosiuko, Funky Monkeys e India Style. Incluye accesorios y categorías originales de las tiendas. Es un archivo de consultas parciales, con precios y stock que deben confirmarse en la fuente.
 
 Estado de publicación y límites aceptados: [cierre de portfolio](docs/audit/CIERRE-PORTFOLIO.md).
-La reparación histórica está preparada como [propuesta revisable](docs/audit/H06-PROPUESTA-CONSERVADORA-FINAL.md); los commits locales no significan que la base real ni el despliegue ya estén corregidos.
+La reparación histórica fue [aplicada con respaldo](docs/audit/H06-APLICACION-2026-11-03.md) y la web publicada refleja esos datos. La [verificación de publicación](docs/audit/PUBLICACION-2026-11-03.md) registra CI y despliegue correctos, y la configuración SMTP que todavía falta completar para el contacto.
 
 ---
 

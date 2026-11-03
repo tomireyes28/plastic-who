@@ -4,8 +4,8 @@ Este registro distingue correcciones locales de operaciones pendientes. No equiv
 
 | Área | Estado |
 |---|---|
-| H01–H05, H07 | Corregidos en código; despliegue pendiente |
-| H06 | Aplicado con aprobación expresa y respaldo el 03/11/2026: 752 productos reparados, 4.662 validados, cero totales inválidos. Verificación independiente confirma precios/stock/nombres/estados sin cambios. Materiales ambiguos y pendientes permanecen UNKNOWN. Ver H06-APLICACION-2026-11-03.md; despliegue todavía pendiente |
+| H01–H05, H07 | Código subido a main; web desplegada y verificada en Vercel. Actions ejecutará el scraper corregido en las próximas corridas; no se lanzó scraping real como prueba |
+| H06 | Aplicado con aprobación expresa y respaldo el 03/11/2026: 752 productos reparados, 4.662 validados, cero totales inválidos. Verificación independiente confirma precios/stock/nombres/estados sin cambios. Materiales ambiguos y pendientes permanecen UNKNOWN. Catálogo público verificado; ver H06-APLICACION-2026-11-03.md y PUBLICACION-2026-11-03.md |
 | H13 | Validación estricta de tipos, tamaños, email y motivo; rechazo de inyección en cabeceras; escape de HTML. 28 pruebas web pasan, sin correo real |
 | H14 | Corregido: sin credenciales devuelve 503; fallos/rechazos devuelven error; éxito solo tras aceptación del proveedor. Timeout, sin logs del mensaje y formulario conserva texto ante error. Pruebas de proveedores simulados; falta comprobar configuración real sin enviar sin autorización |
 | H08 | Implementado: límite de bytes/tiempo y cuota atómica compartida de 10 intentos/hora y 50/día; 429 al agotarse y 503 si falla. ContactQuota creada con RLS; función real comprobada en transacción revertida (10 aceptadas, 11.ª limitada, cero filas finales). Falta verificar configuración del hosting y SMTP; no se enviaron correos |
@@ -18,10 +18,10 @@ Este registro distingue correcciones locales de operaciones pendientes. No equiv
 | H20 | Alcance mínimo explícito: archivo de productos de tiendas, incluidos accesorios; categorías de la fuente, sin prometer una taxonomía universal ni exclusión de todo artículo no indumentario. Normalización exhaustiva de nombres/categorías queda como mejora |
 | H24 | Corregido: ordena por el precio efectivo mostrado, mantiene ausentes al final y devuelve empate para dos ausentes. No muestra importes negativos/NaN; pruebas con promociones y ambas direcciones |
 | H26/H27 | README alineado con extracción de fichas, política propia y archivo parcial. Retiradas promesas de inspección física, certificación, shared totalmente integrado y PWA/offline completos; presentación avanzada puede esperar |
-| H17 | Workflow de calidad preparado: builds, regresiones API/web y prueba HTTP del build con fixtures. Sin credenciales de producción ni scraping; ejecución en GitHub pendiente de push autorizado |
+| H17 | Workflow de calidad ejecutado correctamente en GitHub tras el push autorizado: instalación limpia, builds, regresiones API/web y prueba HTTP del build con fixtures, sin scraping real |
 | H21 | Corregido: tarjetas con quiebre de palabras y distribución adaptable; paneles limitados a 100dvh con scroll interno. Verificado con fixtures largos a 320/375/390 px y 667×300: sin scroll horizontal, cierre en y=33 y ambos paneles dentro del viewport. Tipos correctos; teclado virtual físico no probado |
 | H22 | Corregido: diálogo nativo con título asociado, fondo inerte, foco inicial en cierre, ciclo Tab/Shift+Tab, Escape y restauración al disparador. Filtros con aria-pressed y acciones de quitar con nombre. Verificado en ambos modales con navegador y fixtures, incluido 390×844; tipos correctos. Evidencia local: previews/H22-modal-mobile.png |
-| Publicación | Datos y cuota ya aplicados; pendiente acceso/configuración de Vercel, SMTP, push/despliegue y recorrido final |
+| Publicación | Push, CI y despliegue correctos; catálogo de producción coincide con los 4.662 productos reparados. Solo falta configuración SMTP en Vercel y comprobación del contacto. Ver PUBLICACION-2026-11-03.md |
 
 ## Preparación de contacto para Vercel y Hostinger
 
@@ -61,13 +61,14 @@ por una integración disponible; no hay CLI de Vercel vinculada al proyecto.
   y coherencia de clasificación sin abrir un cliente de base de datos.
 - Trabajo versionado en commits separados por hallazgo. En esa etapa todavía no
   se habían aplicado los datos ni la cuota. Su aplicación posterior está registrada
-  arriba y en H06-APLICACION-2026-11-03.md. Sigue sin hacerse push/despliegue ni
-  envío de correo real.
+  arriba y en H06-APLICACION-2026-11-03.md. Después se autorizó y completó el
+  push/despliegue; la prueba autorizada de contacto respondió 503 sin enviar correo.
 
-Para publicar faltan acceso al proyecto de Vercel, configuración SMTP y comprobación
-de la base usada por ese despliegue, publicación del código corregido y el recorrido
-final sobre la versión desplegada. La autorización de aplicación y el respaldo ya
-se completaron. Las alertas residuales de dependencias y las mejoras pospuestas
-permanecen documentadas; no se declaran resueltas por compilar correctamente.
+La web y el catálogo ya están publicados y verificados; CI pasó en GitHub. Para
+cerrar el contacto falta completar SMTP en Production de Vercel y volver a
+desplegar para tomar las variables. La casilla de Hostinger existe, pero el
+endpoint confirmó que no tiene un proveedor completo configurado. La autorización
+de aplicación, el respaldo y la cuota ya se completaron. Las alertas residuales de
+dependencias y las mejoras posteriores están documentadas por separado.
 
 Los textos públicos de fuente y las simulaciones no autorizan automáticamente ninguna escritura en producción. Los casos sin evidencia suficiente pueden conservar UNKNOWN o excluirse con una decisión explícita de alcance.

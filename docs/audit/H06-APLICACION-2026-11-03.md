@@ -43,6 +43,11 @@ sus huellas ya no coinciden con las filas reparadas.
 
 ## Pendiente para la web publicada
 
+> Actualización posterior: el usuario autorizó el push y se verificaron CI,
+> despliegue y catálogo público. Solo queda la configuración SMTP del contacto.
+> Ver [publicación verificada](PUBLICACION-2026-11-03.md). Lo siguiente describe
+> el estado al aplicar la base, anterior a ese push.
+
 La aplicación de datos no despliega los commits. Falta publicar el código corregido
 en Vercel y en el scraper, configurar SMTP y verificar el recorrido sobre el
 despliegue. No se hizo push ni se envió correo real en esta operación.
