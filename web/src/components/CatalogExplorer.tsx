@@ -11,6 +11,7 @@ import { FiberGuideView } from './FiberGuideView';
 import { GarmentCard } from './GarmentCard';
 import { TrafficLightInfoModal } from './TrafficLightInfoModal';
 import { CatalogStatus } from './CatalogStatus';
+import { comparePrice } from '../lib/price-order';
 
 interface CatalogExplorerProps {
   initialBrands: BrandSummary[];
@@ -116,14 +117,10 @@ export function CatalogExplorer({
       })
       .sort((a, b) => {
         if (sortOption === 'price_asc') {
-          if (a.price === null) return 1;
-          if (b.price === null) return -1;
-          return a.price - b.price;
+          return comparePrice(a, b);
         }
         if (sortOption === 'price_desc') {
-          if (a.price === null) return 1;
-          if (b.price === null) return -1;
-          return b.price - a.price;
+          return comparePrice(a, b, true);
         }
         if (sortOption === 'name_asc') {
           return a.name.localeCompare(b.name);
