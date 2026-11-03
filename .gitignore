@@ -42,3 +42,6 @@ next-env.d.ts
 # Scratch
 scratch/
 
+# Local production-data review artifacts (not source code)
+docs/audit/previews/
+

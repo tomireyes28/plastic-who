@@ -165,6 +165,27 @@ npm run scrape:kosiuko  # Kosiuko
 npm run scrape:all      # Todas las marcas
 ```
 
+### 7. Vista previa del reprocesamiento de composición (H06)
+
+Desde la raíz, con `api/.env` configurado, se puede comparar el catálogo guardado
+con el parser corregido sin modificar productos ni registrar marcas:
+
+```bash
+npm run build:api
+node api/dist/catalog/preview-composition.cli.js --output docs/audit/previews/mi-revision
+```
+
+El directorio de salida debe ser nuevo. Se generan `RESUMEN.md` y `preview.json`
+con las diferencias, valores anteriores, propuesta, descripción de entrada y
+huellas de versión/datos. La consulta usa una transacción PostgreSQL `READ ONLY`.
+Este comando no tiene opción `--apply`. Los resultados quedan fuera de Git.
+
+Los textos que coinciden con firmas de inferencias antiguas o no tienen descripción
+original se separan como `REVIEW_SOURCE`; no se validan automáticamente. H06 sigue
+pendiente de aplicar hasta revisar la propuesta, respaldar la base y comprobar que
+los registros y el analizador no hayan cambiado. La vista previa no es un respaldo
+completo ni altera precios, stock, estado activo o fechas de scraping.
+
 ---
 
 ## 🧪 Cobertura de Tests

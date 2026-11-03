@@ -43,3 +43,12 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - El pipeline no cuenta como clasificadas las declaraciones parciales. En la interfaz se usa «sin clasificar» y no se dibuja una barra proporcional completa para ellas.
 - Verificación: 118 pruebas aprobadas (51 nuevas), incluida integración del pipeline con Prisma simulado; compilación del backend y tipos de la web correctos. También se inspeccionó localmente el comportamiento sobre el texto `rawComposition` de un build anterior, sin consultar ni escribir en la base; los casos ambiguos o no soportados pueden pasar a UNKNOWN intencionalmente.
 - Pendiente: despliegue y revisión/reprocesamiento de datos históricos en H06. Este commit no escribe en Supabase ni promete interpretar todos los formatos posibles.
+
+## H06 — Vista previa lista; aplicación pendiente de revisión
+
+- Agregado un CLI exclusivo de solo lectura, sin importar el módulo de scraping ni ejecutar registros de marcas. PostgreSQL bloquea escrituras dentro de la transacción de lectura.
+- La comparación usa la descripción completa guardada, no solo el segmento `rawComposition` que pudo quedar truncado. Conserva antes/después, entrada, fecha esperada y huellas de analizador, destino y datos.
+- Los textos con posibles inferencias históricas de One Place World, Reír Enloquecer o Funky Monkeys y los casos sin descripción original requieren revisión de la fuente. La propuesta los deja sin clasificar; no los convierte en declaraciones verificadas.
+- Se generan un resumen y un JSON detallado en un directorio nuevo ignorado por Git. No existe `--apply` y no se sobrescriben revisiones anteriores.
+- La primera lectura del 3 de noviembre encontró 4.662 productos, 813 cambios propuestos, 367 casos para revisar fuente y 20 totales inválidos actuales, frente a cero en la propuesta. Es una fotografía, no un cambio aplicado.
+- Pendiente: revisar la vista previa con el usuario y definir la aplicación con respaldo y comprobación de datos vigentes. No se ha corregido todavía la base real.
