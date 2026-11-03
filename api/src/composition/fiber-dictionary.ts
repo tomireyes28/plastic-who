@@ -81,6 +81,8 @@ export const FIBER_DICTIONARY: FiberDefinition[] = [
     synonyms: [
       'viscosa de bambu',
       'viscosa de bambú',
+      'rayon viscosa',
+      'rayón viscosa',
       'viscosa',
       'viscose',
       'rayon',

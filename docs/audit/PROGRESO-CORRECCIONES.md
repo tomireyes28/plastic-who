@@ -74,6 +74,14 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Verificación: primero se reprodujo la regresión (29 fallos de las 34 pruebas nuevas); con la corrección pasan las 187 pruebas del backend y el build de API. No se consultaron tiendas ni la base, ni se ejecutó persistencia real.
 - Pendiente operativo: desplegar el adaptador corregido antes de reparar el histórico. Los datos almacenados y las vistas previas anteriores no se reescriben con este commit. Continúan pendientes las otras selecciones/normalizaciones de H06 y la aplicación controlada.
 
+### Integración H06 — Alias compuesto «rayón viscosa»
+
+- Agregados `rayón viscosa` y `rayon viscosa` como alias de viscosa semisintética. El tokenizador existente evalúa las expresiones largas primero y ahora asigna cada porcentaje a la expresión completa, conservando el texto de origen.
+- No se fusionan declaraciones con porcentajes independientes de rayón y viscosa. Las cantidades parciales, excesivas, materiales adicionales no cuantificados y otros formatos ambiguos mantienen la incertidumbre; el forro se analiza separado del exterior.
+- Agregadas 24 pruebas con las formas de catálogo 80/20, 96/4, 65/35, mezclas decimales y variantes de orden, tildes, espacios, entidades HTML y saltos de línea. Antes del cambio se reprodujeron 10 fallos en las primeras 19 pruebas.
+- Verificación: 211 pruebas del backend aprobadas y build de API correcto. Comprobación adicional sobre 27 textos de fuente guardados: 24 reproducen los análisis completos revisados y 3 permanecen UNKNOWN por otros problemas. No se consultaron tiendas ni la base, ni se ejecutó persistencia real.
+- La normalización manual de este alias ya está integrada en código. Falta desplegarla y regenerar la propuesta definitiva con las huellas actualizadas antes de aplicar H06; los escenarios anteriores y el histórico de la base permanecen sin reescribir.
+
 ## H07 — Catálogo dinámico, sin fallback implícito
 
 - La portada ahora se renderiza por solicitud. No congela consultas Prisma en el build; la siguiente carga o recarga vuelve a leer la fuente.
