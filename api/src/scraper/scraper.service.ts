@@ -108,6 +108,7 @@ export class ScraperService implements OnModuleInit {
     });
 
     const rawProducts = await adapter.scrapeCatalog(options);
+    if (rawProducts.length === 0) throw new Error(`No products recovered for ${adapter.brandMetadata.slug}; lastScrapedAt is unchanged`);
     const now = new Date();
 
     let withCompositionCount = 0;

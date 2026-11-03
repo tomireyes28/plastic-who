@@ -1,13 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { ScraperCliModule } from './scraper-cli.module';
 import { ScrapeExecutionSummary, ScraperService } from './scraper.service';
+import { resolve } from 'node:path';
+import { acquireScrapeLock, parseScrapeArguments } from './scrape-execution';
 
 async function runCli() {
-  const target = (process.argv[2] || 'all').toLowerCase();
-  const maxProducts = process.argv[3] ? parseInt(process.argv[3], 10) : 30;
-
-  const appContext = await NestFactory.createApplicationContext(ScraperCliModule);
+  const { target, maxProducts } = parseScrapeArguments(process.argv[2], process.argv[3]);
+  const release = acquireScrapeLock(resolve(__dirname, '../../.scrape.lock'));
+  const stop = () => { console.error('Scrape interrupted; partial writes may exist.'); release(); process.exit(1); };
+  const deadline = setTimeout(stop, 12 * 60 * 1000);
+  process.once('SIGTERM', stop); process.once('SIGINT', stop);
+  let appContext: Awaited<ReturnType<typeof NestFactory.createApplicationContext>> | undefined;
   try {
+    appContext = await NestFactory.createApplicationContext(ScraperCliModule);
     const scraperService = appContext.get(ScraperService);
     if (target === 'all') {
       const summaries = await scraperService.scrapeAllBrands({ maxProducts });
@@ -34,7 +39,9 @@ async function runCli() {
       console.log('Resumen de ejecución:', JSON.stringify(summary, null, 2));
     }
   } finally {
-    await appContext.close();
+    try { await appContext?.close(); } finally {
+      clearTimeout(deadline); process.removeListener('SIGTERM', stop); process.removeListener('SIGINT', stop); release();
+    }
   }
 }
 

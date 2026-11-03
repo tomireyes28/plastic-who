@@ -190,6 +190,15 @@ completo ni altera precios, stock, estado activo o fechas de scraping.
 
 ### 8. Publicación y actualización del catálogo (H07)
 
+Las peticiones de los adaptadores tienen un timeout de 20 segundos. El CLI admite
+de 1 a 1000 productos por marca, limita la corrida a 12 minutos y usa
+`api/.scrape.lock` para impedir corridas simultáneas en un mismo checkout. Actions
+serializa las corridas del workflow. Tras una caída abrupta, comprobar que el
+proceso ya no exista antes de retirar un lock antiguo. Una interrupción puede
+dejar escrituras parciales; no es una transacción global ni un bloqueo para CLIs
+en hosts independientes. Una recuperación vacía se considera fallo y no renueva
+la fecha de la marca. No ejecutar el CLI durante una reparación del histórico.
+
 La portada usa render dinámico por solicitud: Prisma y la API se consultan al
 cargar o recargar la página, sin congelar productos durante el build. No incluye
 actualización automática de una pestaña ya abierta. Referencia de Next.js 15:

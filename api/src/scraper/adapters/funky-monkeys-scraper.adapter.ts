@@ -1,3 +1,4 @@
+import { fetchStore } from '../fetch-store';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   BrandScraperMetadata,
@@ -106,7 +107,7 @@ export class FunkyMonkeysScraperAdapter implements StoreScraperAdapter {
 
   async fetchClothingUrlsFromSitemap(): Promise<string[]> {
     try {
-      const response = await fetch(this.sitemapUrl, {
+      const response = await fetchStore(this.sitemapUrl, {
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -147,12 +148,12 @@ export class FunkyMonkeysScraperAdapter implements StoreScraperAdapter {
         'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
       };
 
-      let response = await fetch(url, { headers });
+      let response = await fetchStore(url, { headers });
 
       if (response.status === 429 || response.status === 503) {
         this.logger.warn(`Pausa por rate-limit (${response.status}) en ${url}...`);
         await new Promise((resolve) => setTimeout(resolve, 2500));
-        response = await fetch(url, { headers });
+        response = await fetchStore(url, { headers });
       }
 
       if (!response.ok) {

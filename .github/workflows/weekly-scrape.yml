@@ -1,5 +1,12 @@
 name: Weekly Catalog Scraper
 
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-scrape
+  cancel-in-progress: false
+
 on:
   # Corre automáticamente todos los lunes a las 09:00 UTC (06:00 AM Argentina)
   schedule:
@@ -40,4 +47,5 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
-        run: node api/dist/scraper/run-scrape-cli.js all ${{ github.event.inputs.max_products || '40' }}
+          MAX_PRODUCTS: ${{ github.event.inputs.max_products || '40' }}
+        run: node api/dist/scraper/run-scrape-cli.js all "$MAX_PRODUCTS"

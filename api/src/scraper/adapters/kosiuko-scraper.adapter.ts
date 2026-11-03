@@ -1,3 +1,4 @@
+import { fetchStore } from '../fetch-store';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   BrandScraperMetadata,
@@ -112,7 +113,7 @@ export class KosiukoScraperAdapter implements StoreScraperAdapter {
       const pageUrls = [catUrl, `${catUrl}?p=2`];
       for (const pUrl of pageUrls) {
         try {
-          const res = await fetch(pUrl, {
+          const res = await fetchStore(pUrl, {
             headers: {
               'User-Agent':
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -153,12 +154,12 @@ export class KosiukoScraperAdapter implements StoreScraperAdapter {
         'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
       };
 
-      let res = await fetch(url, { headers });
+      let res = await fetchStore(url, { headers });
 
       if (res.status === 429 || res.status === 503) {
         this.logger.warn(`Pausa por rate-limit (${res.status}) en ${url}...`);
         await new Promise((resolve) => setTimeout(resolve, 2500));
-        res = await fetch(url, { headers });
+        res = await fetchStore(url, { headers });
       }
 
       if (!res.ok) {

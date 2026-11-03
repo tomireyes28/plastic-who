@@ -44,4 +44,5 @@ scratch/
 
 # Local production-data review artifacts (not source code)
 docs/audit/previews/
+api/.scrape.lock
 
