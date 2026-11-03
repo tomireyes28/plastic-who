@@ -49,8 +49,8 @@ export async function fetchBrands(): Promise<BrandSummary[]> {
     }));
   }
 
-  const baseUrl = API_BASE_URL || 'http://localhost:3001/api';
-  const res = await fetch(`${baseUrl}/brands`, { cache: 'no-store' });
+  const baseUrl = process.env.CATALOG_API_URL || API_BASE_URL || 'http://localhost:3001/api';
+  const res = await fetch(`${baseUrl}/brands`, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
   if (!res.ok) {
     throw new Error(`Error al obtener marcas (${res.status})`);
   }
@@ -116,9 +116,10 @@ export async function fetchProducts(
     }));
   }
 
-  const baseUrl = API_BASE_URL || 'http://localhost:3001/api';
+  const baseUrl = process.env.CATALOG_API_URL || API_BASE_URL || 'http://localhost:3001/api';
   const res = await fetch(`${baseUrl}/products?limit=${limit}`, {
     cache: 'no-store',
+    signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) {
     throw new Error(`Error al obtener prendas (${res.status})`);

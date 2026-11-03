@@ -14,6 +14,8 @@
     "build:api": "npm run build --workspace=plastic-who-api",
     "build:web": "npm run build --workspace=plastic-who-web",
     "test:api": "npm run test --workspace=plastic-who-api",
+    "test:web": "node node_modules/jest/bin/jest.js --config web/jest.config.cjs",
+    "test:web:production": "node web/tests/catalog.production.cjs",
     "db:generate": "npm run prisma:generate --workspace=plastic-who-api",
     "db:push": "npm run prisma:push --workspace=plastic-who-api",
     "db:migrate": "npm run prisma:migrate --workspace=plastic-who-api",

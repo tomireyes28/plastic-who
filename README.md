@@ -147,6 +147,7 @@ npm run dev:api
 ### 5. Ejecutar Pruebas Automatizadas
 ```bash
 npm run test:api
+npm run test:web
 ```
 
 ### 6. Ejecutar Scraping de Marcas (Opcional)
@@ -185,6 +186,37 @@ original se separan como `REVIEW_SOURCE`; no se validan automáticamente. H06 si
 pendiente de aplicar hasta revisar la propuesta, respaldar la base y comprobar que
 los registros y el analizador no hayan cambiado. La vista previa no es un respaldo
 completo ni altera precios, stock, estado activo o fechas de scraping.
+
+### 8. Publicación y actualización del catálogo (H07)
+
+La portada usa render dinámico por solicitud: Prisma y la API se consultan al
+cargar o recargar la página, sin congelar productos durante el build. No incluye
+actualización automática de una pestaña ya abierta. Referencia de Next.js 15:
+[configuración de rutas dinámicas](https://nextjs.org/docs/15/app/api-reference/file-conventions/route-segment-config).
+
+- `CATALOG_MODE=live` es el comportamiento por defecto. Si falla la fuente, se
+  muestra un error con una acción de reintento; no se publican ejemplos. Una
+  fuente correctamente vacía muestra un catálogo vacío.
+- `CATALOG_MODE=demo` selecciona explícitamente los ejemplos y muestra un aviso
+  de demostración, también si se configura así en producción. No es un fallback.
+- En modo live, `DATABASE_URL` tiene prioridad. Si no está definida o está vacía,
+  se utiliza `CATALOG_API_URL`, luego el antiguo `NEXT_PUBLIC_API_URL` y finalmente
+  `http://localhost:3001/api`. Las consultas HTTP tienen un timeout de 10 segundos.
+- El build no necesita leer el catálogo. La fuente debe estar accesible desde el
+  servidor al atender solicitudes. Esta corrección no repara los registros viejos:
+  el reprocesamiento de H06 continúa pendiente de revisión.
+
+Se puede verificar el comportamiento del build con una fuente HTTP local simulada,
+sin usar la base real:
+
+```bash
+npm run build:web
+npm run test:web:production
+```
+
+La prueba verifica renovación entre solicitudes, error 500 sin ejemplos,
+catálogo vacío, recuperación y demo explícita. Crea y cierra sus propios servidores
+locales; fuerza vacías las variables de conexión a PostgreSQL.
 
 ---
 

@@ -52,3 +52,13 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Se generan un resumen y un JSON detallado en un directorio nuevo ignorado por Git. No existe `--apply` y no se sobrescriben revisiones anteriores.
 - La primera lectura del 3 de noviembre encontró 4.662 productos, 813 cambios propuestos, 367 casos para revisar fuente y 20 totales inválidos actuales, frente a cero en la propuesta. Es una fotografía, no un cambio aplicado.
 - Pendiente: revisar la vista previa con el usuario y definir la aplicación con respaldo y comprobación de datos vigentes. No se ha corregido todavía la base real.
+
+## H07 — Catálogo dinámico, sin fallback implícito
+
+- La portada ahora se renderiza por solicitud. No congela consultas Prisma en el build; la siguiente carga o recarga vuelve a leer la fuente.
+- Eliminado el reemplazo automático por productos y marcas de ejemplo ante errores o respuestas vacías. Demo es un modo explícito (`CATALOG_MODE=demo`) con aviso visible.
+- La caída de la fuente produce un error genérico y una acción de reintento mediante nueva navegación. Los detalles privados del proveedor no se incluyen en el error público. Una fuente vacía tiene una pantalla propia.
+- Agregada la alternativa de servidor `CATALOG_API_URL` cuando no se usa `DATABASE_URL`, manteniendo compatibilidad con la URL anterior, y timeout de 10 segundos para la lectura HTTP.
+- Verificación: 13 pruebas web; build y chequeo de tipos correctos. La prueba de producción usa exclusivamente fixtures locales y comprueba cambios sin recompilar, cabecera no-store, error 500, vacío, recuperación y demo explícita. En navegador se verificaron el mensaje de error y la recuperación al pulsar «Volver a intentar».
+- El build marca `/` como dinámica y no contiene una portada prerenderizada. No se ejecutaron escrituras en Supabase ni se desplegó la web o el worker remoto.
+- Pendiente operativo: desplegar la versión corregida. H06 continúa pendiente de revisión/aplicación; los procesos de scraping remotos deberán usar también el código corregido antes de reparar el histórico para no volver a generar inferencias antiguas.
