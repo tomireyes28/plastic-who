@@ -31,7 +31,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
       });
 
       const data = await res.json();
-      if (!res.ok) {
+      if (!res.ok || data.success !== true) {
         throw new Error(data.error || 'Error al enviar el mensaje');
       }
 
@@ -91,8 +91,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-[#494c45]">
               Tu sugerencia nos ayuda a mantener este archivo textil
-              transparente y libre de engaños comerciales. Te responderemos a la
-              brevedad.
+              transparente. El servicio de correo aceptó tu mensaje para su envío.
             </p>
             <button
               type="button"

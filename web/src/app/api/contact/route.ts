@@ -4,7 +4,10 @@ import { escapeContactHtml, parseContact } from '../../../lib/contact';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    let body: unknown;
+    try { body = await req.json(); } catch {
+      return NextResponse.json({ error: 'El contenido del formulario no es válido.' }, { status: 400 });
+    }
     const parsed = parseContact(body);
     if (!parsed) {
       return NextResponse.json(
@@ -67,6 +70,7 @@ ${safeMessage}
     if (process.env.RESEND_API_KEY) {
       const resendRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
+        signal: AbortSignal.timeout(10000),
         headers: {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
           'Content-Type': 'application/json',
@@ -81,11 +85,9 @@ ${safeMessage}
         }),
       });
 
-      if (!resendRes.ok) {
-        const errorData = await resendRes.json();
-        console.error('Error enviando con Resend:', errorData);
-        throw new Error('Fallo al enviar correo con Resend');
-      }
+      if (!resendRes.ok) throw new Error('Mail provider rejected request');
+      const confirmation = await resendRes.json();
+      if (typeof confirmation.id !== 'string' || !confirmation.id) throw new Error('Missing mail acceptance');
 
       return NextResponse.json({
         success: true,
@@ -104,13 +106,16 @@ ${safeMessage}
         host: process.env.SMTP_HOST, // ej: smtp.hostinger.com
         port: parseInt(process.env.SMTP_PORT || '465', 10),
         secure: process.env.SMTP_PORT === '465' || !process.env.SMTP_PORT, // true para 465
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
       });
 
-      await transporter.sendMail({
+      const confirmation = await transporter.sendMail({
         from: `"Plastic Who" <${process.env.SMTP_USER}>`,
         to: recipient,
         replyTo: email,
@@ -118,6 +123,10 @@ ${safeMessage}
         text: textContent,
         html: htmlContent,
       });
+      if (!confirmation.accepted?.some((address: string | { address: string }) =>
+        (typeof address === 'string' ? address : address.address).toLowerCase() === recipient.toLowerCase())) {
+        throw new Error('Recipient not accepted');
+      }
 
       return NextResponse.json({
         success: true,
@@ -126,27 +135,15 @@ ${safeMessage}
       });
     }
 
-    // 3. Fallback en desarrollo / sin credenciales aún cargadas
-    console.log(
-      '\n[PLASTIC WHO CONTACT FORM - SIMULADO (Aún sin RESEND_API_KEY ni SMTP)]',
-    );
-    console.log(textContent);
-    console.log('----------------------------------------------------------\n');
-
-    return NextResponse.json({
-      success: true,
-      simulated: true,
-      message:
-        '¡Mensaje recibido! (Simulación de desarrollo: las credenciales de email aún no están cargadas en el .env).',
-    });
-  } catch (error) {
-    console.error('Error procesando formulario de contacto:', error);
+    return NextResponse.json({ error: 'El contacto no está disponible. Conservá tu mensaje e intentá más tarde.' }, { status: 503 });
+  } catch {
+    console.error('Contact mail delivery failed');
     return NextResponse.json(
       {
         error:
           'Ocurrió un error al enviar el mensaje. Por favor intentá nuevamente.',
       },
-      { status: 500 },
+      { status: 502 },
     );
   }
 }
