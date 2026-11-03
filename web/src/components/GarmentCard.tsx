@@ -1,4 +1,4 @@
-import { formatArsPrice } from '../lib/api';
+import { formatArsPrice } from '../lib/format';
 import { ProductCardItem, TrafficLightColor } from '../types/catalog';
 import { WeaveBar } from './WeaveBar';
 
