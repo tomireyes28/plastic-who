@@ -16,7 +16,9 @@ function fixture() {
   const unsigned = { mode: 'CONSERVATIVE_REVIEW_ONLY_NO_APPLY', databaseFingerprint: 'fixture', analyzerFingerprint: 'fixture', adapterFingerprint: 'fixture',
     rows: [{ ...row, proposedDescription: product.description, approvedToApply: false }] };
   const plan = { ...unsigned, reviewFingerprint: createHash('sha256').update(JSON.stringify(unsigned)).digest('hex') } as ReviewedPlan;
-  const tx = { $executeRaw: jest.fn().mockResolvedValue(0), brand: { findMany: jest.fn().mockResolvedValue([product.brand]) }, product: {
+  const tx = { $executeRaw: jest.fn().mockResolvedValueOnce(0).mockResolvedValue(1),
+    productFiber: { deleteMany: jest.fn().mockResolvedValue({ count: 1 }), createMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    brand: { findMany: jest.fn().mockResolvedValue([product.brand]) }, product: {
     findMany: jest.fn().mockResolvedValueOnce([product]).mockResolvedValue([{ ...product, ...row.after }]), update: jest.fn().mockResolvedValue({}),
   } };
   const prisma = { $transaction: jest.fn(async action => action(tx)) } as unknown as PrismaService;
@@ -32,10 +34,10 @@ describe('Explicit, guarded H06 application (simulated DB only)', () => {
   });
   it('backs up before writing and modifies only composition and source description', async () => {
     const { plan, tx, prisma } = fixture();
-    const backup = jest.fn(async () => { expect(tx.product.update).not.toHaveBeenCalled(); });
+    const backup = jest.fn(async () => { expect(tx.$executeRaw).toHaveBeenCalledTimes(1); expect(tx.productFiber.deleteMany).not.toHaveBeenCalled(); });
     expect(await applyReviewedPlan(prisma, plan, backup)).toEqual({ changed: 1, validated: 1 });
     expect(tx.$executeRaw).toHaveBeenCalled(); expect(backup).toHaveBeenCalled();
-    const data = tx.product.update.mock.calls[0][0].data;
+    const data = JSON.parse(tx.$executeRaw.mock.calls[1][1])[0];
     expect(data.trafficLight).toBe('GREEN');
     for (const field of ['name', 'price', 'inStock', 'isActive', 'lastSeenAt', 'brandId']) expect(data).not.toHaveProperty(field);
   });
@@ -43,6 +45,7 @@ describe('Explicit, guarded H06 application (simulated DB only)', () => {
     const { plan, tx, prisma } = fixture();
     await expect(applyReviewedPlan(prisma, plan, async () => { throw new Error('disk full'); })).rejects.toThrow('disk full');
     expect(tx.product.update).not.toHaveBeenCalled();
+    expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
   });
   it('does not back up or write if an input changed', async () => {
     const { plan, tx, prisma } = fixture(); plan.rows[0].sourceFingerprint = 'stale'; const backup = jest.fn();
@@ -67,5 +70,11 @@ describe('Explicit, guarded H06 application (simulated DB only)', () => {
   it('rejects aggregates that do not match the declared fibers', () => {
     const state = parser.parseFromText('100% algodón'); state.naturalPercentage = 50;
     expect(() => validateReviewedState(state)).toThrow('Aggregates do not match');
+  });
+  it('aborts before fiber replacement if the bulk update count differs', async () => {
+    const { plan, tx, prisma } = fixture();
+    tx.$executeRaw.mockReset().mockResolvedValue(0);
+    await expect(applyReviewedPlan(prisma, plan, jest.fn())).rejects.toThrow('Unexpected update count');
+    expect(tx.productFiber.deleteMany).not.toHaveBeenCalled();
   });
 });

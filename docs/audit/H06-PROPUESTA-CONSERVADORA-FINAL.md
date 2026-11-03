@@ -1,5 +1,9 @@
 # H06 — Propuesta conservadora para cerrar la reparación histórica
 
+> Estado histórico: el usuario autorizó este plan y se aplicó el 3 de noviembre
+> de 2026. Ver [resultado y respaldo](H06-APLICACION-2026-11-03.md).
+> Los párrafos siguientes documentan la propuesta previa; no es un plan reaplicable.
+
 **Solo vista previa. No se aplicaron escrituras ni se aprobó ninguna fila.**
 
 La nueva lectura PostgreSQL fue de solo lectura. Conserva los mismos 4.662

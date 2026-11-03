@@ -64,16 +64,28 @@ export async function applyReviewedPlan(prisma: PrismaService, plan: ReviewedPla
     // Failure to save the backup aborts before the first product write.
     await backup({ mode: 'PRE_REPAIR_APPLICATION_DATA_BACKUP', generatedAt: new Date().toISOString(),
       reviewFingerprint: plan.reviewFingerprint, brands, products });
-    let changed = 0;
-    for (const row of plan.rows.filter(row => row.changed)) {
-      const a = row.after;
-      await tx.product.update({ where: { id: row.id }, data: {
-        description: row.proposedDescription, rawComposition: a.rawComposition,
-        naturalPercentage: a.naturalPercentage, semiSyntheticPercentage: a.semiSyntheticPercentage,
-        syntheticPercentage: a.syntheticPercentage, trafficLight: a.trafficLight, hasSyntheticLining: a.hasSyntheticLining,
-        fibers: { deleteMany: {}, create: a.fibers.map(f => ({ fiberName: f.fiberName, category: f.category, percentage: f.percentage, isLining: f.isLining })) },
-      } });
-      changed++;
+    const changes = plan.rows.filter(row => row.changed);
+    if (changes.length) {
+      const patch = changes.map(row => ({ id: row.id, description: row.proposedDescription,
+        rawComposition: row.after.rawComposition, naturalPercentage: row.after.naturalPercentage,
+        semiSyntheticPercentage: row.after.semiSyntheticPercentage, syntheticPercentage: row.after.syntheticPercentage,
+        trafficLight: row.after.trafficLight, hasSyntheticLining: row.after.hasSyntheticLining }));
+      const updated = await tx.$executeRaw`
+        UPDATE "Product" AS p SET "description" = v."description", "rawComposition" = v."rawComposition",
+          "naturalPercentage" = v."naturalPercentage", "semiSyntheticPercentage" = v."semiSyntheticPercentage",
+          "syntheticPercentage" = v."syntheticPercentage", "trafficLight" = v."trafficLight"::"TrafficLightColor",
+          "hasSyntheticLining" = v."hasSyntheticLining", "updatedAt" = CURRENT_TIMESTAMP
+        FROM jsonb_to_recordset(${JSON.stringify(patch)}::jsonb) AS v(
+          id text, "description" text, "rawComposition" text, "naturalPercentage" double precision,
+          "semiSyntheticPercentage" double precision, "syntheticPercentage" double precision,
+          "trafficLight" text, "hasSyntheticLining" boolean)
+        WHERE p.id = v.id
+      `;
+      if (updated !== changes.length) throw new Error('Unexpected update count; transaction will roll back');
+      await tx.productFiber.deleteMany({ where: { productId: { in: changes.map(row => row.id) } } });
+      const fibers = changes.flatMap(row => row.after.fibers.map(f => ({ productId: row.id, fiberName: f.fiberName,
+        category: f.category, percentage: f.percentage, isLining: f.isLining })));
+      if (fibers.length) await tx.productFiber.createMany({ data: fibers });
     }
     const after = await tx.product.findMany({ include: { fibers: true }, orderBy: { id: 'asc' } });
     const sameFibers = (items: CompositionAnalysisResult['fibers']) => JSON.stringify(items.map(f => ({ fiberName: f.fiberName,
@@ -88,6 +100,6 @@ export async function applyReviewedPlan(prisma: PrismaService, plan: ReviewedPla
         throw new Error('Post-write validation failed; transaction will roll back');
       }
     }
-    return { changed, validated: after.length };
+    return { changed: changes.length, validated: after.length };
   }, { isolationLevel: 'Serializable', timeout: 180000, maxWait: 15000 });
 }
