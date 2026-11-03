@@ -59,6 +59,9 @@ Los reportes originales conservan la evidencia anterior a las correcciones. Este
 - Los textos con posibles inferencias históricas de One Place World, Reír Enloquecer o Funky Monkeys y los casos sin descripción original requieren revisión de la fuente. La propuesta los deja sin clasificar; no los convierte en declaraciones verificadas.
 - Se generan un resumen y un JSON detallado en un directorio nuevo ignorado por Git. No existe `--apply` y no se sobrescriben revisiones anteriores.
 - La primera lectura del 3 de noviembre encontró 4.662 productos, 813 cambios propuestos, 367 casos para revisar fuente y 20 totales inválidos actuales, frente a cero en la propuesta. Es una fotografía, no un cambio aplicado.
+- Consolidación posterior a H04 y revisión de fuentes: 187 productos con declaración incorporada (145 algodón, 10 viscosa y 32 bambú con categoría pendiente), 153 prendas comprobadas con campos vacíos, 1 cuaderno para revisar alcance y 26 casos de cantidades/alcance aún pendientes. El escenario acumulado conserva 180 alertas de datos/alcance; eso incluye casos ya revisados que deben permanecer UNKNOWN.
+- La última vista previa tiene 677 diferencias de análisis: 187 con evidencia recuperada, 26 de fuente/alcance pendientes y 464 propuestas calculadas que aún requieren revisión. Cambian de color 318 productos; no hay excesos propuestos de cantidades por exterior/forro. Cero filas aprobadas para aplicar.
+- Resumen consolidado y criterios de cierre en `docs/audit/RESUMEN-FINAL-VISTA-PREVIA-H06.md`. Las selecciones/transcripciones locales todavía deben integrarse a una propuesta reproducible; el CLI continúa siendo exclusivamente de lectura. La limpieza de texto no sustentado y la aplicación con respaldo/validación siguen pendientes.
 - Pendiente: revisar la vista previa con el usuario y definir la aplicación con respaldo y comprobación de datos vigentes. No se ha corregido todavía la base real.
 
 ## H07 — Catálogo dinámico, sin fallback implícito
