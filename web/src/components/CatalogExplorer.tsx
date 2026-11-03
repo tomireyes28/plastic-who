@@ -54,7 +54,7 @@ export function CatalogExplorer({
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
-  // Categorías únicas presentes en las prendas cargadas
+  // Categorías únicas presentes en las productos cargadas
   const categories = useMemo(() => {
     const set = new Set<string>();
     for (const p of initialProducts) {
@@ -222,8 +222,8 @@ export function CatalogExplorer({
         </div>
 
         <p className="mt-2.5 max-w-xl text-base leading-relaxed text-[#494c45]">
-          Ropa filtrada por lo que realmente está hecha en su etiqueta interna,
-          no por lo que promete el marketing de temporada.
+          Comparamos la composición declarada en las fichas de las tiendas.
+          La información ausente o ambigua queda sin clasificar.
         </p>
 
         {/* Navegación principal tipo pestañas de fichero */}
@@ -282,7 +282,7 @@ export function CatalogExplorer({
             {mode === 'brand' ? (
               <div>
                 <div className="font-label text-[11px] font-bold tracking-wider text-[#5a5d55] uppercase">
-                  1. Seleccioná una tienda auditada
+                  1. Seleccioná una tienda registrada
                 </div>
                 <div className="mt-2.5 flex flex-wrap gap-2">
                   <button
@@ -445,7 +445,7 @@ export function CatalogExplorer({
                     htmlFor="category-select"
                     className="font-label block text-[11px] font-bold tracking-wider text-[#5a5d55] uppercase"
                   >
-                    Tipo de Prenda
+                    Categoría de la tienda
                   </label>
                   <select
                     id="category-select"
@@ -589,7 +589,7 @@ export function CatalogExplorer({
                 <div className="font-label flex items-center justify-between text-xs text-[#5a5d55]">
                   <span>
                     Mostrando {displayedProducts.length} de{' '}
-                    {filteredProducts.length.toLocaleString('es-AR')} prendas
+                    {filteredProducts.length.toLocaleString('es-AR')} productos
                   </span>
                 </div>
                 {displayedProducts.map((product) => (
@@ -602,7 +602,7 @@ export function CatalogExplorer({
                       onClick={() => setVisibleCount((prev) => prev + 36)}
                       className="font-label cursor-pointer border border-[#191c18] bg-[#191c18] px-6 py-3 text-xs font-bold tracking-wider text-[#f3efe6] uppercase transition-colors hover:bg-[#333]"
                     >
-                      Cargar más prendas ({filteredProducts.length - visibleCount}{' '}
+                      Cargar más productos ({filteredProducts.length - visibleCount}{' '}
                       restantes)
                     </button>
                   </div>
@@ -611,7 +611,7 @@ export function CatalogExplorer({
             ) : (
               <div className="garment-tag-border bg-[#fbf9f5] p-8 text-center">
                 <p className="font-editorial text-lg font-semibold text-[#191c18]">
-                  No encontramos prendas con esa combinación de filtros.
+                  No encontramos productos con esa combinación de filtros.
                 </p>
                 <p className="mt-1 text-sm text-[#5a5d55]">
                   Probá cambiando el filtro del semáforo a &ldquo;Todos&rdquo;,
