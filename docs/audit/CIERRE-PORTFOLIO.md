@@ -6,9 +6,9 @@ Este registro distingue correcciones locales de operaciones pendientes. No equiv
 |---|---|
 | H01–H05, H07 | Código subido a main; web desplegada y verificada en Vercel. Actions ejecutará el scraper corregido en las próximas corridas; no se lanzó scraping real como prueba |
 | H06 | Aplicado con aprobación expresa y respaldo el 03/11/2026: 752 productos reparados, 4.662 validados, cero totales inválidos. Verificación independiente confirma precios/stock/nombres/estados sin cambios. Materiales ambiguos y pendientes permanecen UNKNOWN. Catálogo público verificado; ver H06-APLICACION-2026-11-03.md y PUBLICACION-2026-11-03.md |
-| H13 | Validación estricta de tipos, tamaños, email y motivo; rechazo de inyección en cabeceras; escape de HTML. 28 pruebas web pasan, sin correo real |
-| H14 | Corregido: sin credenciales devuelve 503; fallos/rechazos devuelven error; éxito solo tras aceptación del proveedor. Timeout, sin logs del mensaje y formulario conserva texto ante error. Pruebas de proveedores simulados; falta comprobar configuración real sin enviar sin autorización |
-| H08 | Implementado: límite de bytes/tiempo y cuota atómica compartida de 10 intentos/hora y 50/día; 429 al agotarse y 503 si falla. ContactQuota creada con RLS; función real comprobada en transacción revertida (10 aceptadas, 11.ª limitada, cero filas finales). Falta verificar configuración del hosting y SMTP; no se enviaron correos |
+| H13 | Validación estricta de tipos, tamaños, email y motivo; rechazo de inyección en cabeceras; escape de HTML. Pruebas unitarias de contenido y comprobación posterior del contacto desplegado |
+| H14 | Corregido: 503 sin credenciales, error ante fallos/rechazos, éxito solo tras aceptación. Configuración SMTP real comprobada con una prueba expresamente autorizada: HTTP 200 y recepción confirmada por el usuario |
+| H08 | Implementado: límite de bytes/tiempo y cuota atómica de 10 intentos/hora y 50/día; 429 al agotarse y 503 si falla. ContactQuota con RLS; función real comprobada en transacción revertida. Producción admitió la prueba SMTP autorizada y el usuario confirmó recepción |
 | H16 | Operación aditiva ContactQuota aplicada con aprobación del usuario, respaldo verificado, RLS habilitado, sin permisos de PUBLIC y acceso del propietario servidor. Sin reset ni cambios destructivos del esquema existente |
 | H09 | Consulta renovada, Next 15.5.29 y Multer 2.5.0. Alertas bajan de 30 a 28 entradas (altas 6→4); persisten PostCSS/Prisma y herramientas con alcance documentado en H09-DEPENDENCIAS-CIERRE.md. No se declara auditoría limpia ni migración mayor completada |
 | H10 | Corregido: peticiones a tiendas con timeout de 20 s, CLI con máximo de 12 min y argumentos validados, exclusión por workspace y concurrency en Actions. Cero productos recuperados falla sin renovar lastScrapedAt. 373 pruebas API y build correctos. Puede haber escrituras parciales al interrumpir; un lock tras caída requiere inspección manual. No es un bloqueo distribuido para CLIs en hosts independientes |
@@ -21,7 +21,7 @@ Este registro distingue correcciones locales de operaciones pendientes. No equiv
 | H17 | Workflow de calidad ejecutado correctamente en GitHub tras el push autorizado: instalación limpia, builds, regresiones API/web y prueba HTTP del build con fixtures, sin scraping real |
 | H21 | Corregido: tarjetas con quiebre de palabras y distribución adaptable; paneles limitados a 100dvh con scroll interno. Verificado con fixtures largos a 320/375/390 px y 667×300: sin scroll horizontal, cierre en y=33 y ambos paneles dentro del viewport. Tipos correctos; teclado virtual físico no probado |
 | H22 | Corregido: diálogo nativo con título asociado, fondo inerte, foco inicial en cierre, ciclo Tab/Shift+Tab, Escape y restauración al disparador. Filtros con aria-pressed y acciones de quitar con nombre. Verificado en ambos modales con navegador y fixtures, incluido 390×844; tipos correctos. Evidencia local: previews/H22-modal-mobile.png |
-| Publicación | Push, CI y despliegue correctos; catálogo de producción coincide con los 4.662 productos reparados. Solo falta configuración SMTP en Vercel y comprobación del contacto. Ver PUBLICACION-2026-11-03.md |
+| Publicación | Primera versión de portfolio cerrada dentro del alcance declarado: push/CI/despliegue correctos, 4.662 productos reparados publicados y contacto con recepción confirmada. Mejoras y riesgos residuales documentados aparte |
 
 ## Preparación de contacto para Vercel y Hostinger
 
@@ -64,11 +64,12 @@ por una integración disponible; no hay CLI de Vercel vinculada al proyecto.
   arriba y en H06-APLICACION-2026-11-03.md. Después se autorizó y completó el
   push/despliegue; la prueba autorizada de contacto respondió 503 sin enviar correo.
 
-La web y el catálogo ya están publicados y verificados; CI pasó en GitHub. Para
-cerrar el contacto falta completar SMTP en Production de Vercel y volver a
-desplegar para tomar las variables. La casilla de Hostinger existe, pero el
-endpoint confirmó que no tiene un proveedor completo configurado. La autorización
-de aplicación, el respaldo y la cuota ya se completaron. Las alertas residuales de
-dependencias y las mejoras posteriores están documentadas por separado.
+La web y el catálogo están publicados y verificados; CI pasó en GitHub. El bloqueo
+SMTP inicial se resolvió configurando las variables y volviendo a desplegar:
+HTTP 200 por SMTP y correo recibido, confirmado expresamente por el usuario.
+La autorización de aplicación, el respaldo y la cuota también se completaron.
+La versión inicial puede presentarse dentro del alcance documentado. Las alertas
+residuales de dependencias y mejoras posteriores no se consideran resueltas;
+se mantienen en la lista separada para mantenimiento y evolución.
 
 Los textos públicos de fuente y las simulaciones no autorizan automáticamente ninguna escritura en producción. Los casos sin evidencia suficiente pueden conservar UNKNOWN o excluirse con una decisión explícita de alcance.

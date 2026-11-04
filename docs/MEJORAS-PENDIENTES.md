@@ -1,5 +1,10 @@
 # Mejoras posteriores a la primera versión de portfolio
 
+La versión inicial se cerró el 3 de noviembre de 2026 tras comprobar despliegue,
+catálogo reparado y recepción del contacto. Esta lista conserva el trabajo de
+evolución y mantenimiento que se decidió posponer; ver la
+[verificación de publicación](audit/PUBLICACION-2026-11-03.md).
+
 Esta lista separa evolución del producto de las comprobaciones de publicación.
 Para cerrar la versión inicial, el commit publicado debe pasar CI, la web debe
 mostrar el catálogo corregido y el contacto debe funcionar honestamente con la

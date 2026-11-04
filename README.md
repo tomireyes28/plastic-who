@@ -24,7 +24,7 @@ Comparar composiciones entre tiendas exige leer formatos, nombres y mezclas dife
 La fotografía revisada del 3 de noviembre de 2026 contiene **4.662 productos** de tiendas como Wanama, Paula Cahen D'Anvers, Portsaid, Desiderata, Rapsodia, Kosiuko, Funky Monkeys e India Style. Incluye accesorios y categorías originales de las tiendas. Es un archivo de consultas parciales, con precios y stock que deben confirmarse en la fuente.
 
 Estado de publicación y límites aceptados: [cierre de portfolio](docs/audit/CIERRE-PORTFOLIO.md).
-La reparación histórica fue [aplicada con respaldo](docs/audit/H06-APLICACION-2026-11-03.md) y la web publicada refleja esos datos. La [verificación de publicación](docs/audit/PUBLICACION-2026-11-03.md) registra CI y despliegue correctos, y la configuración SMTP que todavía falta completar para el contacto.
+La reparación histórica fue [aplicada con respaldo](docs/audit/H06-APLICACION-2026-11-03.md) y la web publicada refleja esos datos. La [verificación de publicación](docs/audit/PUBLICACION-2026-11-03.md) registra CI y despliegue correctos, y una prueba de contacto SMTP autorizada con recepción confirmada.
 
 ---
 

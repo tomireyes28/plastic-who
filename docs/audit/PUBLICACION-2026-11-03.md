@@ -19,7 +19,7 @@ El usuario autorizó el push de los commits. Se publicó `main` hasta
 La comprobación pública no requirió acceder al navegador ni a secretos del hosting.
 El resultado detallado local está en `docs/audit/previews/PUBLICACION-VERIFICADA.json`.
 
-## Único bloqueo funcional encontrado: configuración del contacto
+## Bloqueo de contacto encontrado y resuelto
 
 El usuario autorizó una única prueba de contacto sin datos personales. El endpoint
 de producción respondió **503**, con el mensaje de contacto no disponible.
@@ -35,6 +35,19 @@ en el chat. Después hace falta un nuevo despliegue para tomar las variables.
 Referencias: [variables de Vercel](https://vercel.com/docs/environment-variables)
 y [datos de conexión de Hostinger Email](https://www.hostinger.com/support/1575756-how-to-get-email-account-configuration-details-for-hostinger-email/).
 
-La funcionalidad de catálogo puede mostrarse; el cierre completo del contacto
-requiere esa configuración y comprobar aceptación y recepción de la prueba.
-Las mejoras diferidas están separadas y no deben confundirse con este bloqueo.
+El usuario completó la configuración y volvió a desplegar. Vercel confirmó
+éxito para el despliegue `3v1EhMMT9aP9W37pqb2UeELaCxv5` del commit `b9348b4`.
+La única prueba de envío autorizada devolvió **HTTP 200, success=true,
+provider=smtp**, y el usuario confirmó que el correo llegó a su casilla.
+No se enviaron pruebas adicionales después de esa aceptación.
+
+La evidencia local está en `docs/audit/previews/CONTACT-POST-SMTP-RESULT.json`.
+Las credenciales se ingresaron en el hosting; no se copiaron al repositorio.
+El dominio personalizado mostrado en la captura no pudo comprobarse mediante
+las herramientas de lectura disponibles; el enlace comprobado es
+`https://plastic-who.vercel.app/`. Eso no demuestra una falla del dominio.
+
+**La primera versión de portfolio queda cerrada dentro del alcance declarado:**
+catálogo corregido publicado, checks correctos, interfaz comprobada y contacto
+con recepción confirmada. La lista de mejoras posteriores permanece separada;
+no se afirma que estén resueltas las alertas residuales o toda la deuda técnica.
